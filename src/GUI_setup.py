@@ -7,7 +7,9 @@ inspired by https://zhuanlan.zhihu.com/p/82989116
 import maya.cmds as cmd
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
-
+from PySide2 import QtWidgets
+from PySide2 import QtGui
+from shiboken2 import wrapInstance
 
 
 class LandscapeTool(omui.MPxContext):
@@ -16,14 +18,17 @@ class LandscapeTool(omui.MPxContext):
     as a tool
     It will be placed on maya's tool shelf / custom
     """
-    def __int__(self):
+    def __init__(self):
         omui.MPxContext.__init__(self)
+        print("land")
+        self.mainGUI()
 
     def doPress(self, event, view):
         self.mainGUI()
     def open_gui(self):
         self.mainGUI()
     def mainGUI(self):
+        print("HI")
         WINDOW_NAME = 'CC_Tool'
         WINDOW_TITLE = 'CC_Tool1.0'
 
@@ -43,3 +48,14 @@ class LandscapeTool(omui.MPxContext):
 
         cmd.showWindow(WINDOW_NAME)
 
+    def add_tool_to_shelf(self, tool_name, tool_icon, tool_command):
+        shelf_layout = omui.MayaWindow().findChild(QtWidgets.QLayout, "__mainLayout")
+        shelf_widget = shelf_layout.itemAt(0).widget()
+
+        button = QtWidgets.QPushButton()
+        button.setText(tool_name)
+        button.setIcon(QtGui.QIcon(tool_icon))
+        button.setToolTip(tool_name)
+        button.clicked.connect(tool_command)
+
+        shelf_widget.layout().addWidget(button)

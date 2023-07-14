@@ -10,25 +10,43 @@ def maya_useNewAPI():
 
 
 class ToolBuildCommand(omui.MPxContextCommand):
-    def __int__(self):
-        om.MPxContextCommand.__init__(self)
+    def __init__(self):
+        omui.MPxContextCommand.__init__(self)
+        self.makeObj()
+
     def makeObj(self):
-        return  gui.LandscapeTool()
+        """
+        This is an overlay function of MPxContetCommand.makeObj
+        It Creates a proxy context. Maya dont call it(why?) so I call it in __init__
+        :return: MPxContext
+        """
+        tool = gui.LandscapeTool()
+        return  tool
 
     @staticmethod
     def toolCreator():
         return ToolBuildCommand()
 
 def initializePlugin(plugin_Object):
+    """
+    This function is called when loading the plugin from maya plugin manager or command
+    :param plugin_Object: Maya will provide this
+    :return: none
+    """
     plugin_Fn = om.MFnPlugin(plugin_Object, 'ZJU', '1.0', 'Any')
 
     try:
-        print("TRYIT")
         plugin_Fn.registerContextCommand("mcltool", ToolBuildCommand.toolCreator)
+        print("Successfully Initialized")
     except:
         om.MGlobal.displayError("Failed to register Editor")
 
 def uninitializePlugin(plugin_Object):
+    """
+    This function is called when trying to unload the plugin from plugin manager or command
+    :param plugin_Object:
+    :return:
+    """
     plugin_Fn = om.MFnPlugin(plugin_Object, 'ZJU', '1.0', 'Any')
 
     try:
