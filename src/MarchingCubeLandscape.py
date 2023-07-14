@@ -15,22 +15,23 @@ class ToolBuildCommand(omui.MPxContextCommand):
     def makeObj(self):
         return  gui.LandscapeTool()
 
-    @classmethod
-    def tool_creator(cls):
+    @staticmethod
+    def toolCreator():
         return ToolBuildCommand()
 
-def initializePlugin(plugin_object):
-    plugin_Fn = om.MFnPlugin(plugin_object)
+def initializePlugin(plugin_Object):
+    plugin_Fn = om.MFnPlugin(plugin_Object, 'ZJU', '1.0', 'Any')
 
     try:
-        plugin_Fn.registerContextCommand("MCL_Tool", ToolBuildCommand.tool_creator())
+        print("TRYIT")
+        plugin_Fn.registerContextCommand("mcltool", ToolBuildCommand.toolCreator)
     except:
         om.MGlobal.displayError("Failed to register Editor")
 
-def uninitializePlugin(plugin_object):
-    plugin_Fn = om.MFnPlugin(plugin_object)
+def uninitializePlugin(plugin_Object):
+    plugin_Fn = om.MFnPlugin(plugin_Object, 'ZJU', '1.0', 'Any')
 
     try:
-        plugin_Fn.deregisterContextCommand("MCL_Tool")
+        plugin_Fn.deregisterContextCommand("mcltool")
     except:
         om.MGlobal.displayError(("Failed to unregister Editor"))
