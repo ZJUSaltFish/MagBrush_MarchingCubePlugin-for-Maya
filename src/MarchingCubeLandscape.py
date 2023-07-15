@@ -1,6 +1,6 @@
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
-import GUI_setup as gui
+import mcl_plugin.GUI_setup as gui
 
 def maya_useNewAPI():
     """
@@ -14,14 +14,16 @@ class ToolBuildCommand(omui.MPxContextCommand):
         omui.MPxContextCommand.__init__(self)
         self.makeObj()
 
+    def __del__(self):
+        self.tool.remove_from_shelf()
+
     def makeObj(self):
         """
         This is an overlay function of MPxContetCommand.makeObj
         It Creates a proxy context. Maya dont call it(why?) so I call it in __init__
         :return: MPxContext
         """
-        tool = gui.LandscapeTool()
-        return  tool
+        self.tool = gui.LandscapeTool()
 
     @staticmethod
     def toolCreator():
@@ -34,7 +36,6 @@ def initializePlugin(plugin_Object):
     :return: none
     """
     plugin_Fn = om.MFnPlugin(plugin_Object, 'ZJU', '1.0', 'Any')
-
     try:
         plugin_Fn.registerContextCommand("mcltool", ToolBuildCommand.toolCreator)
         print("Successfully Initialized")

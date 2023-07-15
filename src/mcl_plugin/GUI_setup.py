@@ -3,8 +3,9 @@ Automatically load the tool to shelf after plugin setup
 Adjusted based on yunanask's verson
 inspired by https://zhuanlan.zhihu.com/p/82989116
 '''
-
+import maya.cmds
 import maya.cmds as cmd
+import maya.mel as mel
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
 from PySide2 import QtWidgets
@@ -13,6 +14,7 @@ from shiboken2 import wrapInstance
 
 
 class LandscapeTool(omui.MPxContext):
+    TOOL_NAME = 'mcltool'
     """
     This is a class defining Marching Cubes Landscape Editor
     as a tool
@@ -20,15 +22,18 @@ class LandscapeTool(omui.MPxContext):
     """
     def __init__(self):
         omui.MPxContext.__init__(self)
-        print("land")
-        self.mainGUI()
+        self.add_to_shelf()
 
+    def stringClassName(self):
+        """
+        This function is called by mels to determine the unique name of the tool
+        :return: MString
+        """
+        return 'mcltool'
     def doPress(self, event, view):
         self.mainGUI()
-    def open_gui(self):
-        self.mainGUI()
+
     def mainGUI(self):
-        print("HI")
         WINDOW_NAME = 'CC_Tool'
         WINDOW_TITLE = 'CC_Tool1.0'
 
@@ -48,14 +53,20 @@ class LandscapeTool(omui.MPxContext):
 
         cmd.showWindow(WINDOW_NAME)
 
-    def add_tool_to_shelf(self, tool_name, tool_icon, tool_command):
-        shelf_layout = omui.MayaWindow().findChild(QtWidgets.QLayout, "__mainLayout")
-        shelf_widget = shelf_layout.itemAt(0).widget()
+    def add_to_shelf(self):
+        """
+        This function creates a new tool on the tool shelf.
+        Use the tool to start the plugin gui
+        :return: None
+        """
+        print("Adding "+ self.TOOL_NAME + " to Shelf/Custom")
+        shelf_top_level = mel.eval("global string $gShelfTopLevel;$temp = $gShelfTopLevel")
+        maya.cmds.setParent("%s|Custom" % shelf_top_level)
+        maya.cmds.shelfButton( annotation=self.TOOL_NAME, image1 = 'commandButton.png', command=self.mainGUI )
 
-        button = QtWidgets.QPushButton()
-        button.setText(tool_name)
-        button.setIcon(QtGui.QIcon(tool_icon))
-        button.setToolTip(tool_name)
-        button.clicked.connect(tool_command)
-
-        shelf_widget.layout().addWidget(button)
+    def remove_from_shelf(self):
+        """
+        This function deletes the mcltool
+        :return: None
+        """
+        print("Removing " + self.TOOL_NAME+" to Shelf/Custom")
