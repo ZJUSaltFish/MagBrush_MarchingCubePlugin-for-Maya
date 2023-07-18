@@ -82,12 +82,19 @@ class MclManager(object):
         cmds.window(WINDOW_NAME, title=WINDOW_TITLE)
         cmds.columnLayout(adj=True)
 
-        explain_ZeroPivot = '坐标移动至原点'
-        explain_Clean = '物体和坐标移动到原点'
-        explain_Tool = "Start landscape editing tool"
+        # Radius Slider
+        cmds.separator(height=10, style='none')
+        cmds.text(label='Radius')
+        cmds.floatSliderGrp(min=1, max=50, value=10, field=True,
+                            dragCommand=lambda x: self.brush_tool.set_radius(x))
+        # Strength Slider
+        cmds.separator(height=10, style='none')
+        cmds.text(label='Strength')
+        cmds.floatSliderGrp(min=0.0, max=1.0, value=10, field=True,
+                            dragCommand=lambda x: self.brush_tool.set_strength(x))
 
-        cmds.button(l='ZeroPivot', ann=explain_ZeroPivot, h=60, w=20, c='pivotMoveToWorldPositon000()')
-        cmds.button(l='ZeroMeshClean', ann=explain_Clean, h=60, w=20, c='meshMoveToWorldPosition000AndClean()')
+
+        explain_Tool = "Start landscape editing tool"
         cmds.button(l = 'Tool', ann = explain_Tool, h = 60, w = 20, c = self.start_tool)
 
         cmds.showWindow(WINDOW_NAME)
