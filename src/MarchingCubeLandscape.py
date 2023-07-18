@@ -1,33 +1,26 @@
+import inspect
+import os
+import sys
+
+script_file = inspect.getframeinfo(inspect.currentframe()).filename
+script_dir = os.path.dirname(os.path.abspath(script_file))
+script_dir += '\mcl_plugin'
+sys.path.append(script_dir)
+
+import maya.cmds as cmds
+import maya.mel as mel
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
+
 import mcl_plugin.GUI_setup as gui
+import mcl_plugin.manager as manager
+from mcl_plugin.tool_context import LandscapeTool
 
 def maya_useNewAPI():
     """
     This is an empty function telling maya to use api2.0
     """
     pass
-
-
-class ToolBuildCommand(omui.MPxContextCommand):
-    def __init__(self):
-        omui.MPxContextCommand.__init__(self)
-        self.makeObj()
-
-    def __del__(self):
-        self.tool.remove_from_shelf()
-
-    def makeObj(self):
-        """
-        This is an overlay function of MPxContetCommand.makeObj
-        It Creates a proxy context. Maya dont call it(why?) so I call it in __init__
-        :return: MPxContext
-        """
-        self.tool = gui.LandscapeTool()
-
-    @staticmethod
-    def toolCreator():
-        return ToolBuildCommand()
 
 def initializePlugin(plugin_Object):
     """
@@ -36,11 +29,7 @@ def initializePlugin(plugin_Object):
     :return: none
     """
     plugin_Fn = om.MFnPlugin(plugin_Object, 'ZJU', '1.0', 'Any')
-    try:
-        plugin_Fn.registerContextCommand("mcltool", ToolBuildCommand.toolCreator)
-        print("Successfully Initialized")
-    except:
-        om.MGlobal.displayError("Failed to register Editor")
+    plugin_manager = manager.MclManager(plugin_Fn)
 
 def uninitializePlugin(plugin_Object):
     """
@@ -48,9 +37,4 @@ def uninitializePlugin(plugin_Object):
     :param plugin_Object:
     :return:
     """
-    plugin_Fn = om.MFnPlugin(plugin_Object, 'ZJU', '1.0', 'Any')
-
-    try:
-        plugin_Fn.deregisterContextCommand("mcltool")
-    except:
-        om.MGlobal.displayError(("Failed to unregister Editor"))
+    pass
