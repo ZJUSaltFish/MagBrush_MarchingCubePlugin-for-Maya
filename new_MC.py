@@ -330,18 +330,24 @@ new_points = [
     (0,0,2),(2,0,2),(2,0,0),(0,0,0),(0,2,2),(2,2,2),(2,2,0),(0,2,0)
 ]
 
-
-
+point_list = []
+num_list = []
+face_list = []
 def showmesh(vertices, size, p_x, p_y, p_z):
+    face_list.append(len(vertices))
     for i in range(len(vertices)):
         (x, y, z) = vertices[len(vertices) - i - 1]
         x = (x - 1) * size * 0.5 + 1 + p_x * size
         y = (y - 1) * size * 0.5 + 1 + p_y * size
         z = (z - 1) * size * 0.5 + 1 + p_z * size
-        finall_vertices.append((x,y,z))
+        point = om.MPoint(x,y,z)
+        if point in point_list:
+            num_list.append(point_list.index(point))
+        else:
+            point_list.append(point)
+            num_list.append(len(point_list)-1)
 
-finall_vertices = []
-# for i in range(200,205):
+
 def makeCube(type, size, p_x, p_y, p_z,show):
     global finall_vertices
     finall_vertices = []
@@ -357,8 +363,6 @@ def makeCube(type, size, p_x, p_y, p_z,show):
                 ],
                 size,p_x,p_y,p_z
             )
-            irregular_cube = cmds.polyCreateFacet(p=finall_vertices)
-            finall_vertices = []
     
     tmp_vertices=[]
     for j in range(6):
@@ -380,36 +384,9 @@ def makeCube(type, size, p_x, p_y, p_z,show):
                 if(faces[j][k] in tmp_vertices):
                     new_vertices.append(faces[j][k])
             showmesh(new_vertices,size,p_x,p_y,p_z)
-            # for k in range(1,len(new_vertices)-1):
-            #     showmesh(
-            #         [
-            #             new_vertices[0],
-            #             new_vertices[k],
-            #             new_vertices[k+1]
-            #         ],
-            #         size,p_x,p_y,p_z
-            #     )
-            if(finall_vertices!=[]):
-                irregular_cube = cmds.polyCreateFacet(p=finall_vertices)
-            # if(new_vertices!=[]):
-            #     irregular_cube = cmds.polyCreateFacet(p=new_vertices)
-                # irregular_cube = cmds.polyCreateFacet( 
-                #     p=[new_vertices[0],new_vertices[k],new_vertices[k+1]] 
-                #     )
-                # selected_faces.append(irregular_cube[0])
-                # cmds.polyCloseBorder(irregular_cube)
-    # if(len(selected_faces)>1):
-    #     combined_mesh = cmds.polyUnite(selected_faces, ch=False, mergeUVSets=True, centerPivot=True)[0]
-    # else:
-    #     combined_mesh = selected_faces
-    # cmds.scale(size*0.5,size*0.5,size*0.5,combined_mesh, pivot=(1,1,1))
-    # cmds.move(p_x*size,p_y*size,p_z*size,combined_mesh, relative=True)
-    # cmds.rename(combined_mesh, 'CombinedMesh')
-    # cmds.scale(size*0.5,size*0.5,size*0.5,selected_faces, pivot=(1,1,1))
-    # cmds.move(p_x*size,p_y*size,p_z*size,selected_faces, relative=True)
 
-max_x = 10
-max_y = 10
+max_x = 50
+max_y = 50
 max_z = 1
 
 mesh = [[[rand.randint(0,1) for _ in range(max_z+1)] for _ in range(max_y+1)] for _ in range(max_x+1)]
@@ -423,3 +400,6 @@ for i in range(max_x):
                 mesh[i+1][j+1][k]*64 + mesh[i][j+1][k]*128
             if (type!=255):
                 makeCube(type,3,i,j,k,[i==0,i==max_x-1,j==0,j==max_y-1,k==0,k==max_z-1])
+
+new_mesh = om.MFnMesh()
+new_mesh.create(point_list, face_list, num_list)
