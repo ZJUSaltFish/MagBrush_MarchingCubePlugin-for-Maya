@@ -403,3 +403,14 @@ for i in range(max_x):
 
 new_mesh = om.MFnMesh()
 new_mesh.create(point_list, face_list, num_list)
+new_mesh.setName("TmpMesh")
+
+default_material = 'lambert1'
+
+mesh_objects = cmds.ls("TmpMesh*")[0]
+
+shading_group = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)
+cmds.connectAttr(default_material + ".outColor", shading_group + '.surfaceShader',f = True)
+cmds.sets(mesh_objects, edit = True, forceElement = shading_group)
+cmds.polySoftEdge(mesh_objects, cch = 1, a="0")
+cmds.rename(mesh_objects, "polySurface")
