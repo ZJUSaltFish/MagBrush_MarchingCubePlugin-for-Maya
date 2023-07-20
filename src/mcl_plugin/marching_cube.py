@@ -339,8 +339,7 @@ class MarchingCube(object):
         self.max_x = 40
         self.max_y = 40
         self.max_z = 40
-        cmds.polyCreateFacet(p=[(-20,0,-20),(-20,0,20),(20,0,20),(20,0,-20)])
-        self.mesh = [[[1.0 for _ in range(self.max_z+1)] for _ in range(self.max_y+1)] for _ in range(self.max_x+1)]
+        cmds.polyCreateFacet(p=[(0.5,0.5,0.5),(0.5,0.5,40.5),(40.5,0.5,40.5),(40.5,0.5,0.5)])        self.mesh = [[[1.0 for _ in range(self.max_z+1)] for _ in range(self.max_y+1)] for _ in range(self.max_x+1)]
     
     point_list = []
     num_list = []

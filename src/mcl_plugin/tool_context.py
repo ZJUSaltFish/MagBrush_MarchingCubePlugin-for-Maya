@@ -153,6 +153,8 @@ class BrushTool():
         hit = False
         selec_iter = om.MItSelectionList(selection_list)
 
+        final_hit_return = []
+
         while not selec_iter.isDone():
             dag_path = selec_iter.getDagPath()
             fn_mesh = om.MFnMesh(dag_path)
@@ -160,15 +162,18 @@ class BrushTool():
             hit_return = fn_mesh.closestIntersection(om.MFloatPoint(ray_source), om.MFloatVector(ray_direction),
                                                      om.MSpace.kWorld, 1000, False)
             if hit_return:
-                hit = True
-                intersect_point = hit_return[0]
-                break
+                if final_hit_return == [] or hit_return[1]<final_hit_return[1]:
+                    final_hit_return = hit_return
+                # hit = True
+                # intersect_point = hit_return[0]
+                # break
 
             selec_iter.next()
 
-        if hit:
+        if final_hit_return != []:
             #print("Intersection Point: ", intersect_point)
             #do something else
+            intersect_point = final_hit_return[0]
             self._render_brush(location = intersect_point)
             (x,y,z,t) = intersect_point
             self.MC.addPoint(om.MPoint(x,y,z),self._brush_radius,-self._brush_strength)
