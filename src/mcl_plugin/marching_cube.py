@@ -339,7 +339,9 @@ class MarchingCube(object):
         self.max_x = 40
         self.max_y = 40
         self.max_z = 40
-        cmds.polyCreateFacet(p=[(0.5,0.5,0.5),(0.5,0.5,40.5),(40.5,0.5,40.5),(40.5,0.5,0.5)])        self.mesh = [[[1.0 for _ in range(self.max_z+1)] for _ in range(self.max_y+1)] for _ in range(self.max_x+1)]
+        cmds.polyCreateFacet(p=[(0.5,0.5,0.5),(0.5,0.5,40.5),(40.5,0.5,40.5),(40.5,0.5,0.5)])
+        
+        self.mesh = [[[1.0 for _ in range(self.max_z+1)] for _ in range(self.max_y+1)] for _ in range(self.max_x+1)]
     
     point_list = []
     num_list = []
@@ -486,7 +488,9 @@ class MarchingCube(object):
         cmds.connectAttr(default_material + ".outColor", shading_group + '.surfaceShader',f = True)
         cmds.sets(mesh_objects, edit = True, forceElement = shading_group)
         cmds.polySoftEdge(mesh_objects, cch = 1, a="0")
-        cmds.rename(mesh_objects, f'mesh_{p_x}_{p_y}_{p_z}')
+
+        target = cmds.listRelatives(cmds.rename(mesh_objects, f'mesh_{p_x}_{p_y}_{p_z}'), allParents = True)
+        cmds.rename(target, f'block_{p_x}_{p_y}_{p_z}')
 
     
     def makeCube(self, type, size, p_x, p_y, p_z,show):
