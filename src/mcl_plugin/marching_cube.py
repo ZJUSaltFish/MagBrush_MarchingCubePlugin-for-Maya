@@ -336,9 +336,9 @@ class MarchingCube(object):
     mul = [8, 1, 128, 16, 4, 2, 64, 32]
 
     def __init__(self):
-        self.max_x = 20
-        self.max_y = 20
-        self.max_z = 20
+        self.max_x = 40
+        self.max_y = 40
+        self.max_z = 40
         cmds.polyCreateFacet(p=[(-20,0,-20),(-20,0,20),(20,0,20),(20,0,-20)])
         self.mesh = [[[1.0 for _ in range(self.max_z+1)] for _ in range(self.max_y+1)] for _ in range(self.max_x+1)]
     
@@ -349,7 +349,6 @@ class MarchingCube(object):
     new_mesh = om.MFnMesh()
 
     def addPoint(self, point, dist, addition):
-
         # self.point_list = []
         # self.num_list = []
         # self.face_list = []
@@ -405,23 +404,45 @@ class MarchingCube(object):
         # mesh_list = cmds.ls(type = 'mesh')
 
         # cmds.polyUnite(mesh_list,ch=False)
+        changed_cube = mesh = [[[0 for _ in range(self.max_z//8)] for _ in range(self.max_y//8)] for _ in range(self.max_x//8)]
 
         for i in range(self.max_x+1):
             for j in range(self.max_y+1):
                 for k in range(self.max_z+1):
                     other_point = om.MPoint(i, j, k)
                     if(other_point.distanceTo(point)<dist):
+                        if(self.mesh[i][j][k]>=1.0 and self.mesh[i][j][k]+addition<1.0)\
+                            or(self.mesh[i][j][k]<1.0 and self.mesh[i][j][k]+addition>=1.0):
+                            for t in range(8):
+                                i-=t//4
+                                j-=(t%4)//2
+                                k-=t%2
+                                if(0<=i and i<self.max_x and 0<=j and j<self.max_y and 0<=k and k<self.max_z):
+                                    changed_cube[i//8][j//8][k//8] = 1 
+                                i+=t//4
+                                j+=(t%4)//2
+                                k+=t%2
                         self.mesh[i][j][k] += addition
                         if(self.mesh[i][j][k]<0):
                             self.mesh[i][j][k] = 0
-                        if(self.mesh[i][j][k]>1.0):
-                            self.mesh[i][j][k] = 1.0
-        target = cmds.listRelatives(cmds.ls(type='mesh'), allParents = True)
-        cmds.delete(target)
+                        if(self.mesh[i][j][k]>2.0):
+                            self.mesh[i][j][k] = 2.0
+        # target = cmds.listRelatives(cmds.ls(type='mesh'), allParents = True)
+        # cmds.delete(target)
 
-        cmds.polyCreateFacet(p=[(-20,0,-20),(-20,0,20),(20,0,20),(20,0,-20)])
-
-        self.render()
+        # cmds.polyCreateFacet(p=[(-20,0,-20),(-20,0,20),(20,0,20),(20,0,-20)])
+        for i in range(self.max_x//8):
+            for j in range(self.max_y//8):
+                for k in range(self.max_z//8):
+                    if(changed_cube[i][j][k]):
+                        string = f'mesh_{i}_{j}_{k}'
+                        cube_list = cmds.ls(string)
+                        print(cube_list)
+                        if(cube_list != []):
+                            for cube in cube_list:
+                                target = cmds.listRelatives(cube, allParents = True)
+                                cmds.delete(target)
+                        self.render(i, j, k)
 
         cmds.select(cmds.ls(type='mesh'))
 
@@ -439,15 +460,15 @@ class MarchingCube(object):
                 self.point_list.append(point)
                 self.num_list.append(len(self.point_list)-1)
 
-    def render(self):
+    def render(self, p_x, p_y, p_z):
         
         self.point_list = []
         self.num_list = []
         self.face_list = []
 
-        for i in range(self.max_x):
-            for j in range(self.max_y):
-                for k in range(self.max_z):
+        for i in range(p_x*8, p_x*8+8):
+            for j in range(p_y*8, p_y*8+8):
+                for k in range(p_z*8, p_z*8+8):
                     type = 0
                     for t in range(8):
                         if self.mesh[i + t//4][j + (t % 4) // 2][k + t % 2] >= 1 :
@@ -466,7 +487,7 @@ class MarchingCube(object):
         cmds.connectAttr(default_material + ".outColor", shading_group + '.surfaceShader',f = True)
         cmds.sets(mesh_objects, edit = True, forceElement = shading_group)
         cmds.polySoftEdge(mesh_objects, cch = 1, a="0")
-        cmds.rename(mesh_objects, "polySurface")
+        cmds.rename(mesh_objects, f'mesh_{p_x}_{p_y}_{p_z}')
 
     
     def makeCube(self, type, size, p_x, p_y, p_z,show):
