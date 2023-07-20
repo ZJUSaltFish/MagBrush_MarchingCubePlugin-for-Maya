@@ -3,6 +3,8 @@ import random as rand
 import maya.api.OpenMaya as om
 
 class MarchingCube(object):
+    # 255种情况中与等势面相交的边
+    # The edges intersecting with the equipotential surfaces among 255 cases.
     edgeTable=[
         0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
         0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
@@ -38,6 +40,8 @@ class MarchingCube(object):
         0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0   
     ]
 
+    # 255种情况中生成的三角形的顶点编号
+    # The vertex indices of the triangles generated in 255 cases.
     triTable =[
         [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
         [0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
@@ -297,6 +301,8 @@ class MarchingCube(object):
         [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
     ]
 
+    # 不同编号顶点所对应的三维坐标
+    # The three-dimensional coordinates corresponding to vertices with different identifiers.
     vertices = [
         (1, 0, 2),    # 顶点0
         (2, 0, 1),    # 顶点1
@@ -312,6 +318,8 @@ class MarchingCube(object):
         (0, 1, 0)
     ]
 
+    # 六个面上的顶点的共同点
+    # The common point of the vertices on six faces.
     points = [
         [0,-1,-1],
         [2,-1,-1],
@@ -321,6 +329,8 @@ class MarchingCube(object):
         [-1,-1,2]
     ]
 
+    # 六个面上的顶点的排布顺序
+    # The arrangement order of vertices on six faces.
     faces = [
         [(0,0,0),(0,1,0),(0,2,0),(0,2,1),(0,2,2),(0,1,2),(0,0,2),(0,0,1)],
         [(2,0,1),(2,0,2),(2,1,2),(2,2,2),(2,2,1),(2,2,0),(2,1,0),(2,0,0)],#
@@ -329,26 +339,47 @@ class MarchingCube(object):
         [(0,0,0),(1,0,0),(2,0,0),(2,1,0),(2,2,0),(1,2,0),(0,2,0),(0,1,0)],#
         [(0,1,2),(0,2,2),(1,2,2),(2,2,2),(2,1,2),(2,0,2),(1,0,2),(0,0,2)]
     ]
+
+    # 八个顶点的坐标
+    # The coordinates of the eight vertices.
     new_points = [
         (0,0,2),(2,0,2),(2,0,0),(0,0,0),(0,2,2),(2,2,2),(2,2,0),(0,2,0)
     ]
 
+    # 八个顶点的位进制
+    # Octal representation of eight vertices.
     mul = [8, 1, 128, 16, 4, 2, 64, 32]
 
+
+    # 初始化marching_cube
+    # Initialize marching_cube.
     def __init__(self):
+        # 定义长宽高大小
+        # Define the dimensions of length, width, and height.
         self.max_x = 40
         self.max_y = 40
         self.max_z = 40
+
+        # 创建底部平台
+        # Create a bottom platform.
         cmds.polyCreateFacet(p=[(0.5,0.5,0.5),(0.5,0.5,40.5),(40.5,0.5,40.5),(40.5,0.5,0.5)])
         
+        # 初始化所有顶点状态
+        # Initialize the state of all vertices.
         self.mesh = [[[1.0 for _ in range(self.max_z+1)] for _ in range(self.max_y+1)] for _ in range(self.max_x+1)]
     
+    # 生成 Mesh 的点列表、边数列表、面列表
+    # Generate lists of points, edges, and faces for the mesh.
     point_list = []
     num_list = []
     face_list = []
 
+    # 生成的网格
+    # The generated grid.
     new_mesh = om.MFnMesh()
 
+    # 球状画笔造成点状态改变
+    # Spherical brush causes point state changes.
     def addPoint(self, point, dist, addition):
         # self.point_list = []
         # self.num_list = []
@@ -405,8 +436,12 @@ class MarchingCube(object):
         # mesh_list = cmds.ls(type = 'mesh')
 
         # cmds.polyUnite(mesh_list,ch=False)
+        # 被改变的区块初始化
+        # The initialized blocks that have been altered.
         changed_cube = mesh = [[[0 for _ in range(self.max_z//8)] for _ in range(self.max_y//8)] for _ in range(self.max_x//8)]
 
+        # 统计所有被改变的区块
+        # Counting all the changed blocks.
         for i in range(self.max_x+1):
             for j in range(self.max_y+1):
                 for k in range(self.max_z+1):
@@ -432,6 +467,9 @@ class MarchingCube(object):
         # cmds.delete(target)
 
         # cmds.polyCreateFacet(p=[(-20,0,-20),(-20,0,20),(20,0,20),(20,0,-20)])
+        
+        # 重建被改变的区块
+        # Reconstructing the altered blocks.
         for i in range(self.max_x//8):
             for j in range(self.max_y//8):
                 for k in range(self.max_z//8):
@@ -445,8 +483,14 @@ class MarchingCube(object):
                                 cmds.delete(target)
                         self.render(i, j, k)
 
+
+        # 选中所有 Mesh
+        # Select all meshes.
         cmds.select(cmds.ls(type='mesh'))
 
+    # 计算面片的正确位置，并将结果存入生成 Mesh 的点列表、边数列表、面列表
+    # Calculate the correct positions of the faces and 
+    # store the results in the generated Mesh's vertex list, edge list, and face list.
     def showmesh(self, vertices, size, p_x, p_y, p_z):
         self.face_list.append(len(vertices))
         for i in range(len(vertices)):
@@ -461,12 +505,19 @@ class MarchingCube(object):
                 self.point_list.append(point)
                 self.num_list.append(len(self.point_list)-1)
 
+    # 生成某一区块
+    # Generate a specific block.
     def render(self, p_x, p_y, p_z):
         
+        # 生成 Mesh 的点列表、边数列表、面列表归零
+        # Resetting the point list, edge count list, 
+        # and face list of the generated mesh to zero.
         self.point_list = []
         self.num_list = []
         self.face_list = []
 
+        # 生成每一个单元
+        # Generate each individual cell.
         for i in range(p_x*8, p_x*8+8):
             for j in range(p_y*8, p_y*8+8):
                 for k in range(p_z*8, p_z*8+8):
@@ -477,6 +528,8 @@ class MarchingCube(object):
                     if (type!=255):
                         self.makeCube(type,1,i,j,k,[i==0,i==self.max_x-1,0,j==self.max_y-1,k==0,k==self.max_z-1])
 
+        # 生成 Mesh 并添加材质
+        # Generate mesh and add materials.
         self.new_mesh.create(self.point_list, self.face_list, self.num_list)
         self.new_mesh.setName("TmpMesh")
 
@@ -489,14 +542,21 @@ class MarchingCube(object):
         cmds.sets(mesh_objects, edit = True, forceElement = shading_group)
         cmds.polySoftEdge(mesh_objects, cch = 1, a="0")
 
+        # 改名
+        # Renaming.
         target = cmds.listRelatives(cmds.rename(mesh_objects, f'mesh_{p_x}_{p_y}_{p_z}'), allParents = True)
         cmds.rename(target, f'block_{p_x}_{p_y}_{p_z}')
 
     
+    # 生成单元
+    # Generate cell.
     def makeCube(self, type, size, p_x, p_y, p_z,show):
         
         # print(type)
         selected_faces = []
+
+        # 生成非六面上的面
+        # Generating faces not on hexahedral sides.
         for j in range(0,16,3):
             if(self.triTable[type][j]!=-1):
                 self.showmesh(
@@ -508,6 +568,8 @@ class MarchingCube(object):
                     size,p_x,p_y,p_z
                 )
         
+        # 生成六面上的面
+        # Generating faces on hexahedral sides.
         tmp_vertices=[]
         for j in range(6):
             if(show[j]):
