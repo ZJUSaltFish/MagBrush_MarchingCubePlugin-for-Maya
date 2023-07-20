@@ -19,9 +19,9 @@ class BrushTypes(Enum):
     cube = 'mcl_cube_brush'
 
 class BrushModes(Enum):
-    add = "mcl_add_mode"
-    subtract = "mcl_subtract_mode"
-    smooth = "mcl_smooth_mode"
+    add = 0
+    subtract = 1
+    smooth = 2
     
 class LandscapeTool(omui.MPxContext):
     """
@@ -224,13 +224,8 @@ class BrushTool():
             selec_iter.next()
 
         if final_hit_return != []:
-            #print("Intersection Point: ", intersect_point)
-            #do something else
             intersect_point = final_hit_return[0]
-            self._render_brush(location = intersect_point)
-            (x,y,z,t) = intersect_point
-            self.MC.addPoint(om.MPoint(x,y,z),self._brush_radius,-self._brush_strength)
-            # self.MC.render()
+            return intersect_point
         else:
             return None
     async def _brush_async_control(self):
