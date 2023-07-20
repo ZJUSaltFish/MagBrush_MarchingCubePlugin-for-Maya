@@ -173,7 +173,8 @@ class BrushTool():
         # first update brush mode
         self.update_mode()
         # then get brush location
-        location = self._ray_check()
+        #location = self._ray_check()
+        location = self._ray_march()
         if location is None:
             self._hide_brush()
         else:
@@ -228,6 +229,39 @@ class BrushTool():
             return intersect_point
         else:
             return None
+
+    def _ray_march(self):
+        """
+        Ray marching is another way to get the brush position
+        This method enabled because Marching Cubes have sample points of SDF
+        :return:
+        """
+        # get mouse position in pixel coordinate
+        mouse_pos = cmds.draggerContext(self.CONTEXT_NAME, query=True, dragPoint=True)
+        # convert to MPoint
+        viewport_pos = om.MPoint(mouse_pos[0], mouse_pos[1], 0)
+        # get the source and direction of ray
+        ray_source = om.MPoint()
+        ray_direction = om.MVector()
+        omui.M3dView().active3dView().viewToWorld(int(viewport_pos[0]), int(viewport_pos[1]), ray_source, ray_direction)
+        # marching until touch the surface of SDF
+        MAX_STEP = 64
+        find = False
+        for i in range(128):
+            ray_source += ray_direction * 0.5#step:0.5
+            if(self.MC.get_distance(ray_source) < 0.5):
+                find = True
+                break
+        if find is False:
+            return None
+        else:
+            # do a more detailed marching
+            for i in range(10):
+                ray_source -= ray_direction * 0.05
+                if(self.MC.get_distance(ray_source) > 0.5):
+                    break
+            return  ray_source
+
     async def _brush_async_control(self):
         while True:
             print("Check")

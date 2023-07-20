@@ -590,3 +590,20 @@ class MarchingCube(object):
                         new_vertices.append(self.faces[j][k])
                 self.showmesh(new_vertices,size,p_x,p_y,p_z)
 
+    def get_distance(self, position):
+        """
+        This function receives a world space point, calculates its distance, then returns distance
+        distance: the distance of a world space point to surface. calculated using sample points from Marching Cubes
+        :param position: kwarg, world-pos (x,y,z)
+        :return: distance(float)
+        """
+        if 0<position[0]<8 and 0<position[1]<8 and 0<position[2]<8:
+            x = int(position[0])
+            y = int(position[1])
+            z = int(position[2])
+            lerpx = position[0] - x
+            lerpy = position[1] - y
+            lerpz = position[2] - z
+            return 1.0/3 *( self.mesh[x+1][y][z]*lerpx + self.mesh[x][y+1][z]*lerpy + self.mesh[x][y][z+1]*lerpz + self.mesh[x][y][z]*(3-lerpx-lerpy-lerpz) )
+        else:
+            return 1
