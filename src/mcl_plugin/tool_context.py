@@ -72,7 +72,7 @@ class BrushTool():
                 if cmds.nodeType(node) == 'makeNurbSphere':
                     build_node = node
                     break
-            cmds.setAttr(build_node + '.radius', radius) #seems no use
+            cmds.setAttr(build_node + '.radius', radius/10) #seems no use
 
     def set_hardness(self, hardness):
         self._brush_hardness = hardness
