@@ -340,7 +340,7 @@ class MarchingCube(object):
         self.max_y = 20
         self.max_z = 20
         cmds.polyCreateFacet(p=[(-20,0,-20),(-20,0,20),(20,0,20),(20,0,-20)])
-        self.mesh = [[[1 for _ in range(self.max_z+1)] for _ in range(self.max_y+1)] for _ in range(self.max_x+1)]
+        self.mesh = [[[1.0 for _ in range(self.max_z+1)] for _ in range(self.max_y+1)] for _ in range(self.max_x+1)]
     
     point_list = []
     num_list = []
@@ -411,7 +411,11 @@ class MarchingCube(object):
                 for k in range(self.max_z+1):
                     other_point = om.MPoint(i, j, k)
                     if(other_point.distanceTo(point)<dist):
-                        self.mesh[i][j][k] = addition
+                        self.mesh[i][j][k] += addition
+                        if(self.mesh[i][j][k]<0):
+                            self.mesh[i][j][k] = 0
+                        if(self.mesh[i][j][k]>1.0):
+                            self.mesh[i][j][k] = 1.0
         target = cmds.listRelatives(cmds.ls(type='mesh'), allParents = True)
         cmds.delete(target)
 
@@ -446,7 +450,8 @@ class MarchingCube(object):
                 for k in range(self.max_z):
                     type = 0
                     for t in range(8):
-                        type += self.mesh[i + t//4][j + (t % 4) // 2][k + t % 2] * self.mul[t]
+                        if self.mesh[i + t//4][j + (t % 4) // 2][k + t % 2] >= 1 :
+                            type += self.mul[t]
                     if (type!=255):
                         self.makeCube(type,1,i,j,k,[i==0,i==self.max_x-1,0,j==self.max_y-1,k==0,k==self.max_z-1])
 

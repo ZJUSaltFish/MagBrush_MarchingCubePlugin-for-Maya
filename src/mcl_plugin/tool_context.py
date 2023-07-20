@@ -171,7 +171,7 @@ class BrushTool():
             #do something else
             self._render_brush(location = intersect_point)
             (x,y,z,t) = intersect_point
-            self.MC.addPoint(om.MPoint(x,y,z),self._brush_radius,0)
+            self.MC.addPoint(om.MPoint(x,y,z),self._brush_radius,-0.5)
             # self.MC.render()
         else:
             self._hide_brush()
