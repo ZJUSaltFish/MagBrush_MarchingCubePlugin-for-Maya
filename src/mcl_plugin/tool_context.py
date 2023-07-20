@@ -121,14 +121,19 @@ class BrushTool():
                 if cmds.nodeType(node) == 'makeNurbSphere':
                     build_node = node
                     break
+
             cmds.setAttr(build_node + '.radius', radius)
 
     def set_hardness(self, hardness):
         self._brush_hardness = hardness
+        if (hardness < 1):
+            cmds.setAttr('%s.transparency[1].transparency_Position' % self._brush_mat, 1 - hardness)
+        else:
+            cmds.setAttr('%s.transparency[1].transparency_Position' % self._brush_mat, 0.001)
 
     def set_strength(self, strength):
         self._brush_strength = strength
-        cmds.setAttr('%s.transparency' % self._brush_mat, 1 - strength, 1 - strength, 1 - strength, type="double3")
+        cmds.setAttr('%s.ambientColor' % self._brush_mat, strength, strength, strength, type="double3")
 
     def _ray_check(self):
         mouse_pos = cmds.draggerContext(self.CONTEXT_NAME, query=True, dragPoint=True)
@@ -210,14 +215,20 @@ class BrushTool():
             pass
         else:
             # 创建默认的球体
-            sphereRadius = 1
+            sphereRadius = 10
             sphereStrength = 0.5
-            cmds.sphere(name = self._brush_name, radius=sphereRadius)
+            sphereHardness = 1.0
+            cmds.sphere(name = self._brush_name, radius=sphereRadius/10)
             # 将材质赋给球体,并使其不可选中
             cmds.select(self._brush_name)
             cmds.sets(forceElement='%sSG' % self._brush_mat)
-            # 设置球体的默认透明度值
-            cmds.setAttr('%s.transparency' % self._brush_mat, sphereStrength, sphereStrength, sphereStrength, type="double3")
+            # 设置球体的默认ambient颜色值
+            cmds.setAttr('%s.ambientColor' % self._brush_mat, sphereStrength, sphereStrength, sphereStrength, type="double3")
+            # 设置球体的默认渐变值
+            cmds.setAttr('%s.transparency[0].transparency_Color' % self._brush_mat, 1.0, 1.0, 1.0, type="double3")
+            cmds.setAttr('%s.transparency[1].transparency_Color' % self._brush_mat, 0, 0, 0, type="double3")
+            cmds.setAttr('%s.transparency[1].transparency_Position' % self._brush_mat, 0.001)
+            cmds.setAttr('%s.transparency[1].transparency_Interp' % self._brush_mat, 1)
             # 将该物体设置为不可选中
             cmds.setAttr(self._brush_name + ".overrideEnabled", 1)
             cmds.setAttr(self._brush_name + ".overrideDisplayType", 2)
@@ -228,10 +239,10 @@ class BrushTool():
 
     def _create_brush_mat(self):
         """
-        Create a lambert material
+        Create a rampshader material
         return: material shading node (cmds.shadingNode)
         """
-        mat = cmds.shadingNode('lambert', asShader=True, name="mat")
+        mat = cmds.shadingNode('rampShader', asShader=True, name="mat")
         cmds.sets(name='%sSG' % mat, renderable=True, noSurfaceShader=True, empty=True)
         cmds.connectAttr('%s.outColor' % mat, '%sSG.surfaceShader' % mat)
         return mat
