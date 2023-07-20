@@ -90,9 +90,13 @@ class MclManager(object):
         # Strength Slider
         cmds.separator(height=10, style='none')
         cmds.text(label='Strength')
-        cmds.floatSliderGrp(min=0.0, max=1.0, value=10, field=True,
+        cmds.floatSliderGrp(min=0.0, max=1.0, value=1, field=True,
                             dragCommand=lambda x: self.brush_tool.set_strength(x))
-
+        # Hardness Slider
+        cmds.separator(height=10, style='none')
+        cmds.text(label='Hardness')
+        cmds.floatSliderGrp(min=0.0, max=1.0, value=1, field=True,
+                            dragCommand=lambda x: self.brush_tool.set_hardness(x))
 
         explain_Tool = "Start landscape editing tool"
         cmds.button(l = 'Tool', ann = explain_Tool, h = 60, w = 20, c = self.start_tool)
