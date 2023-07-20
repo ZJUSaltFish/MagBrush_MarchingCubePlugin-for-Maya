@@ -1,8 +1,17 @@
+import threading
+import time
+
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
 
+
 from marching_cube import MarchingCube
+
+from threading import Thread, Event
+from time import sleep
+import asyncio
+
 
 from enum import Enum
 class BrushTypes(Enum):
@@ -43,25 +52,63 @@ class BrushTool():
     CONTEXT_NAME = "BrushContext"
 
     def __init__(self):
-
-        
+        # initialize variables
         self.MC = MarchingCube()
-        # self.MC.render()
-
-
-        cmds.draggerContext(self.CONTEXT_NAME , dragCommand = self._ray_check, edit = False, image1 = 'commandButton.png')
         self._brush_name = 'mcl_brush'
         self._brush_mat = self._create_brush_mat()
         self._brush_type = BrushTypes.sphere
         self._brush_radius = 0
         self._brush_strength = 0
         self._brush_hardness = 0
-
+        # python multi-thread for controlling maya brush. Ugly but I dont have better way.
+        self._brush_event = Event()
+        #self._brush_async = None
+        #self._event_loop = asyncio.new_event_loop()
+        cmds.draggerContext(self.CONTEXT_NAME, initialize=self._switch_on, finalize=self._switch_off, edit=False,
+                            image1='commandButton.png', dragCommand = self._ray_check, pressCommand = self._ray_check)
     def enable(self, *brush_type):
+        """
+        This function is used when clicking "Tool" button on GUI
+        It will create a new tool instance
+        :param BrushTypes.brush_type:
+        :return:
+        """
+        # update brush type
+        self._brush_type = brush_type
         # activate the tool
         cmds.setToolTo(self.CONTEXT_NAME)
+
+    def _switch_on(self):
+        """
+        This function is used to create a new tool instance
+        automatically called when switching to mcltool
+        :return:
+        """
         # create new brush object
-        self._new_brush(brush_type)
+        self._new_brush(self._brush_type)
+
+        # killing old brush controller thread in case the user clicked twice
+        #if self._brush_async is not None:
+        #    self._brush_async.cancel()
+        #self._brush_async = self._event_loop.create_task(self._brush_async_control())
+        #print("created")
+        #asyncio.run(self._brush_async_control())
+        #self._brush_event.set()
+        # new event
+        #self._brush_event = Event()
+        # new controller thread
+        #Thread(target=self._brush_threading, args=(self._brush_event,)).start()
+
+    def _switch_off(self):
+        """
+        This function is used to delete current tool instance
+        automatically called when switching off
+        :return:
+        """
+        if cmds.objExists(self._brush_name):
+            cmds.delete(self._brush_name)
+        #self._brush_async.cancel()
+        #self._brush_event.set()
 
     def set_radius(self, radius):
         self._brush_radius = radius
@@ -74,8 +121,7 @@ class BrushTool():
                 if cmds.nodeType(node) == 'makeNurbSphere':
                     build_node = node
                     break
-            cmds.setAttr(build_node + '.radius', radius) #seems no use
-
+            cmds.setAttr(build_node + '.radius', radius)
 
     def set_hardness(self, hardness):
         self._brush_hardness = hardness
@@ -120,11 +166,23 @@ class BrushTool():
             #do something else
             self._render_brush(location = intersect_point)
             (x,y,z,t) = intersect_point
-            self.MC.addPoint(om.MPoint(x,y,z),1,0)
+            self.MC.addPoint(om.MPoint(x,y,z),self._brush_radius,0)
             # self.MC.render()
         else:
             self._hide_brush()
 
+    async def _brush_async_control(self):
+        while True:
+            print("Check")
+            self._ray_check()
+            await asyncio.sleep(0.05)
+
+    def _brush_threading(self, event):
+        while True:
+            print(cmds.draggerContext(self.CONTEXT_NAME, query = True, dragPoint = True))
+            sleep(0.05)
+            if event.isSet():
+                break
 
     def _render_brush(self, *, location):
         """
@@ -164,7 +222,7 @@ class BrushTool():
             cmds.setAttr(self._brush_name + ".overrideEnabled", 1)
             cmds.setAttr(self._brush_name + ".overrideDisplayType", 2)
             cmds.select(clear=True)
-
+            # make sure self._brush_type is not None
             self._brush_type = BrushTypes.sphere
 
 
@@ -177,3 +235,4 @@ class BrushTool():
         cmds.sets(name='%sSG' % mat, renderable=True, noSurfaceShader=True, empty=True)
         cmds.connectAttr('%s.outColor' % mat, '%sSG.surfaceShader' % mat)
         return mat
+
