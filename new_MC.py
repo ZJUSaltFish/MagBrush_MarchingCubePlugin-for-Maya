@@ -385,11 +385,11 @@ def makeCube(type, size, p_x, p_y, p_z,show):
                     new_vertices.append(faces[j][k])
             showmesh(new_vertices,size,p_x,p_y,p_z)
 
-max_x = 50
-max_y = 50
-max_z = 1
+max_x = 20
+max_y = 1
+max_z = 20
 
-mesh = [[[rand.randint(0,1) for _ in range(max_z+1)] for _ in range(max_y+1)] for _ in range(max_x+1)]
+mesh = [[[0 for _ in range(max_z+1)] for _ in range(max_y+1)] for _ in range(max_x+1)]
 
 
 for i in range(max_x):
@@ -399,7 +399,7 @@ for i in range(max_x):
                 mesh[i][j][k]*8 + mesh[i][j+1][k+1]*16 + mesh[i+1][j+1][k+1]*32 + \
                 mesh[i+1][j+1][k]*64 + mesh[i][j+1][k]*128
             if (type!=255):
-                makeCube(type,3,i,j,k,[i==0,i==max_x-1,j==0,j==max_y-1,k==0,k==max_z-1])
+                makeCube(type,1,i,j,k,[i==0,i==max_x-1,0,j==max_y-1,k==0,k==max_z-1])
 
 new_mesh = om.MFnMesh()
 new_mesh.create(point_list, face_list, num_list)

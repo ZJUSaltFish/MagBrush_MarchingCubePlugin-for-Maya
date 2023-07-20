@@ -2,6 +2,8 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
 
+from marching_cube import MarchingCube
+
 from enum import Enum
 class BrushTypes(Enum):
     sphere = 'mcl_sphere_brush'
@@ -41,6 +43,12 @@ class BrushTool():
     CONTEXT_NAME = "BrushContext"
 
     def __init__(self):
+
+        
+        self.MC = MarchingCube()
+        # self.MC.render()
+
+
         cmds.draggerContext(self.CONTEXT_NAME , dragCommand = self._ray_check, edit = False, image1 = 'commandButton.png')
         self._brush_name = 'mcl_brush'
         self._brush_mat = self._create_brush_mat()
@@ -111,6 +119,9 @@ class BrushTool():
             #print("Intersection Point: ", intersect_point)
             #do something else
             self._render_brush(location = intersect_point)
+            (x,y,z,t) = intersect_point
+            self.MC.addPoint(om.MPoint(x,y,z),1,0)
+            # self.MC.render()
         else:
             self._hide_brush()
 
