@@ -1,10 +1,15 @@
 import inspect
 import os
 import sys
-
+# Add this plugin to maya python dir
 script_file = inspect.getframeinfo(inspect.currentframe()).filename
 script_dir = os.path.dirname(os.path.abspath(script_file))
 script_dir += '\mcl_plugin'
+sys.path.append(script_dir)
+# Add numpy to maya python dir
+script_file = inspect.getframeinfo(inspect.currentframe()).filename
+script_dir = os.path.dirname(os.path.abspath(script_file))
+script_dir += '\\numpy'
 sys.path.append(script_dir)
 
 import maya.cmds as cmds
@@ -12,9 +17,9 @@ import maya.mel as mel
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
 
-import mcl_plugin.GUI_setup as gui
 import mcl_plugin.manager as manager
-from mcl_plugin.tool_context import LandscapeTool
+
+
 
 def maya_useNewAPI():
     """
