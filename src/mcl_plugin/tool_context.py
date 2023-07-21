@@ -5,7 +5,7 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
 
-from marching_cube_np import MarchingCubeNp as mcnp
+#from marching_cube_np import MarchingCubeNp as mcnp
 from marching_cube import MarchingCube
 
 from threading import Thread, Event
@@ -32,7 +32,6 @@ class BrushTool():
         Switching its radius, strength, hardness, shape, mode according to GUI
         """
         # initialize variables
-        self._mc = mcnp()
         self.MC = MarchingCube()
         self._BRUSH_NAME = 'mcl_brush'
         # the material that brush will use
@@ -144,8 +143,8 @@ class BrushTool():
         # first update brush mode
         self.update_mode()
         # then get brush location
-        #location = self._ray_check()
-        location = self._ray_march()
+        location = self._ray_check()
+        #location = self._ray_march()
         if location is None:
             self._hide_brush()
         else:

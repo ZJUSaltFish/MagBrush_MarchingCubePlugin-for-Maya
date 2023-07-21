@@ -355,8 +355,16 @@ class MarchingCubeNp(object):
     # Initialize marching_cube.
     def __init__(self):
         # 定义长宽高大小
-        # Define the dimensions of length, width, and height.
-        self._size = (40, 40, 40)
+        # num of blocks in x/y/z direction
+        self._size = (5, 5, 5)
+        # num of cubes in a block (default 8x8x8)
+        self._block_size = 8
+
+        # internal of sdf sampling. default = 1, which means 1 unit between two sample points
+        self._internal = 1
+
+        # offset of sdf field in (x,y,z).
+        self._offset = (0,0,0)
 
         # 创建底部平台
         # Create a bottom platform.
@@ -365,6 +373,37 @@ class MarchingCubeNp(object):
         # Initialize the SDF sample field.
         # use numpy array. initialize all samples = 1,
         # data type = float32 since low poly dont need so accurate (default = float64)
-        self._sdf = np.ones(self._size, dtype=np.float32)
-        print(self._sdf)
-        
+        self._sdf = np.ones(self._size * self._block_size, dtype=np.float32)
+
+        # 生成 Mesh 的点列表、边数列表、面列表
+        # Generate lists of points, edges, and faces for the mesh.
+        self._point_list = []
+        self._num_list = []
+        self._face_list = []
+
+        # new mesh generated
+        self._new_mesh = om.MFnMesh()
+
+    def add_point(self, point, dist, addition):
+        """
+        Spherical brush causes point state changes.
+        point: the point that brush draws at
+        dist: the radius of brush
+        addition: the strength of brush. e.g. strength = 1 -> add all sdf sample value by 1
+        :return: None
+        """
+        # The initialized blocks that have been altered.
+        changed_cube = np.zeros(self._size)
+
+        # calculate the indices of sample points that should be modified
+        # for all points in the bounding box of brush: (the larger internal, the less points)
+        # min index = (point - offset - dist)/internal, max index = (point - offset + dist)/internal
+        for i in range(int((point[0] - self._offset[0] - dist) / self._internal), int((point[0] - self._offset[0] + dist) / self._internal) + 1):
+            for j in range(int((point[1] - self._offset[1] - dist) / self._internal), int((point[1] - self._offset[1] + dist) / self._internal) + 1):
+                for k in range(int((point[2] - self._offset[2] - dist) / self._internal), int((point[2] - self._offset[2] + dist) / self._internal) + 1):
+                    # pos = index * internal + offset
+                    other_point = om.MPoint(i * self._internal + self._offset[0], j * self._internal + self._offset[1], k * self._internal * self._offset[2])
+                    if other_point.distanceTo(point) <= dist:
+
+
+
