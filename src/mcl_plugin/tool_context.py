@@ -5,7 +5,7 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
 
-
+from marching_cube_np import MarchingCubeNp as mcnp
 from marching_cube import MarchingCube
 
 from threading import Thread, Event
@@ -22,36 +22,6 @@ class BrushModes(Enum):
     add = 0
     subtract = 1
     smooth = 2
-    
-class LandscapeTool(omui.MPxContext):
-    """
-    This is a class defining Marching Cubes Landscape Editor
-    It dont works. I dont understand
-    """
-    TOOL_NAME = 'mcltool'
-
-    def __init__(self):
-        super(LandscapeTool, self).__init__()
-
-
-    def __del__(self):
-        pass
-
-    def stringClassName(self):
-        """
-        This function is called by mels to determine the unique name of the tool
-        :return: MString
-        """
-        return self.TOOL_NAME
-
-    def toolOnSetup(self):
-        om.MGlobal.displayInfo(self.TOOL_NAME + " is activated.")
-
-    def toolOffCleanup(self):
-        om.MGlobal.displayInfo(self.TOOL_NAME + " is stopped.")
-
-    def doPress(self, event, view, _):
-        print("Pressed")
 
 class BrushTool():
     CONTEXT_NAME = "BrushContext"
@@ -62,6 +32,7 @@ class BrushTool():
         Switching its radius, strength, hardness, shape, mode according to GUI
         """
         # initialize variables
+        self._mc = mcnp()
         self.MC = MarchingCube()
         self._BRUSH_NAME = 'mcl_brush'
         # the material that brush will use
