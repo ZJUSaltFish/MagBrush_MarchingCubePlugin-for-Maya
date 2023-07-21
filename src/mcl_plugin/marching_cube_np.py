@@ -422,9 +422,9 @@ class MarchingCubeNp(object):
         max_y = min(int((point[1] - self._offset[1] + dist) / self._interval) + 1, self._size[1] * self._block_size -1)
         min_z = max(int((point[2] - self._offset[2] - dist) / self._interval), 0)
         max_z = min(int((point[2] - self._offset[2] + dist) / self._interval) + 1, self._size[0] * self._block_size -1)
-        for i in range(min_x, max_x):
-            for j in range(min_y, max_y):
-                for k in range(min_z, max_z):
+        for i in range(min_x, max_x + 1):
+            for j in range(min_y, max_y + 1):
+                for k in range(min_z, max_z + 1):
                     # pos = index * internal + offset
                     other_point = om.MPoint(i * self._interval + self._offset[0], j * self._interval + self._offset[1], k * self._interval + self._offset[2])
                     if other_point.distanceTo(point) < dist:
