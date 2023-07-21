@@ -43,11 +43,17 @@ class BrushTool():
         # the shape or type of brush
         self._brush_type = BrushTypes.sphere
         # basic properties of the brush
-        self._brush_radius = 0
-        self._brush_strength = 0
-        self._brush_hardness = 0
+        self._brush_radius = 1.0
+        self._brush_strength = 1.0
+        self._brush_hardness = 1.0
         # brush mode, add, subtract, smooth, etc
         self._brush_mode = BrushModes.add
+
+        # self._new_brush(self._brush_type)
+        # self.set_radius(1.0)
+        # self.set_strength(1.0)
+        # self.set_hardness(1.0)
+
         # python multi-thread for controlling maya brush. Ugly but I dont have better way.
         # self._brush_event = Event()
         # self._brush_async = None
@@ -87,14 +93,15 @@ class BrushTool():
         if self._brush_type == BrushTypes.sphere:
             # Find the node that builds the sphere brush
             build_node = None
-            history = cmds.listHistory(self._BRUSH_NAME)
-            print(history)
-            for node in history:
-                if cmds.nodeType(node) == 'makeNurbSphere':
-                    build_node = node
-                    break
+            if cmds.ls(self._BRUSH_NAME) != []:
+                history = cmds.listHistory(self._BRUSH_NAME)
+                print(history)
+                for node in history:
+                    if cmds.nodeType(node) == 'makeNurbSphere':
+                        build_node = node
+                        break
 
-            cmds.setAttr(build_node + '.radius', radius)
+                cmds.setAttr(build_node + '.radius', radius)
 
     def set_hardness(self, hardness):
         self._brush_hardness = hardness
@@ -118,6 +125,11 @@ class BrushTool():
         """
         # create new brush object
         self._new_brush(self._brush_type)
+
+        self.set_radius(self._brush_radius)
+        self.set_strength(self._brush_strength)
+        self.set_hardness(self._brush_hardness)
+
         cmds.select(cmds.ls(type='mesh'))
         # killing old brush controller thread in case the user clicked twice
         # if self._brush_async is not None:
