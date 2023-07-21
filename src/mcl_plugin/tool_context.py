@@ -174,10 +174,10 @@ class BrushTool():
             if self._brush_mode == BrushModes.subtract:
                 # press shift to subtract
                 self.MC.addPoint(om.MPoint(x, y, z),
-                                 self._brush_radius, self._brush_strength)
+                                 self._brush_radius, self._brush_strength, self._brush_hardness)
             else:
                 self.MC.addPoint(om.MPoint(x, y, z),
-                                 self._brush_radius, -self._brush_strength)
+                                 self._brush_radius, -self._brush_strength, self._brush_hardness)
             # self.MC.render()
 
     def _ray_check(self):

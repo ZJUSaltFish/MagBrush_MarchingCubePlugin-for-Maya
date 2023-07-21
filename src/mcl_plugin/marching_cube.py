@@ -394,7 +394,7 @@ class MarchingCube(object):
 
     # 球状画笔造成点状态改变
     # Spherical brush causes point state changes.
-    def addPoint(self, point, dist, addition):
+    def addPoint(self, point, dist, addition, hardness):
         now_time = time.time()
 
         if (now_time-self.last_time > 0.100 * (dist ** 0.5)):
@@ -468,8 +468,8 @@ class MarchingCube(object):
                 for k in range(self.max_z+1):
                     other_point = om.MPoint(i, j, k)
                     if (other_point.distanceTo(point) < dist):
-                        if (self.mesh[i][j][k] >= 1.0 and self.mesh[i][j][k]+addition < 1.0)\
-                                or (self.mesh[i][j][k] < 1.0 and self.mesh[i][j][k]+addition >= 1.0):
+                        if (self.mesh[i][j][k] >= 1.0 and self.mesh[i][j][k]+addition*(1-other_point.distanceTo(point)/dist) + addition*other_point.distanceTo(point)/dist*hardness < 1.0)\
+                                or (self.mesh[i][j][k] < 1.0 and self.mesh[i][j][k]+addition*(1-other_point.distanceTo(point)/dist) + addition*other_point.distanceTo(point)/dist*hardness >= 1.0):
                             for t in range(8):
                                 i -= t//4
                                 j -= (t % 4)//2
@@ -479,7 +479,8 @@ class MarchingCube(object):
                                 i += t//4
                                 j += (t % 4)//2
                                 k += t % 2
-                        self.mesh[i][j][k] += addition
+                        self.mesh[i][j][k] += addition*(1-other_point.distanceTo(
+                            point)/dist) + addition*other_point.distanceTo(point)/dist*hardness
                         if (self.mesh[i][j][k] < 0):
                             self.mesh[i][j][k] = 0
                         if (self.mesh[i][j][k] > 2.0):

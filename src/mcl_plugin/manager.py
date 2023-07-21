@@ -5,6 +5,7 @@ import maya.api.OpenMayaUI as omui
 from GUI_setup import MclGui
 from tool_context import BrushTool
 
+
 class MclManager(object):
     """
     This is a class to manager all the mcltool functions
@@ -16,20 +17,21 @@ class MclManager(object):
     API_VERSION = 'Any'
     TOOL_NAME = 'mcltool'
 
-    #This class should be a single instance. Only 1 manager in a maya instance
+    # This class should be a single instance. Only 1 manager in a maya instance
     _instance = None
+
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = object.__new__(cls)
         return cls._instance
 
-    #functions
+    # functions
     def __init__(self, *plugin_fn):
         """
         Initialize the mcl class. should receive a maya plugin function set
         :return:
         """
-        if( plugin_fn != None):
+        if (plugin_fn != None):
             self.plugin_fn = plugin_fn
             self.gui = MclGui()
             self.add_to_shelf()
@@ -99,7 +101,7 @@ class MclManager(object):
                             dragCommand=lambda x: self.brush_tool.set_hardness(x))
 
         explain_Tool = "Start landscape editing tool"
-        cmds.button(l = 'Tool', ann = explain_Tool, h = 60, w = 20, c = self.start_tool)
+        cmds.button(l='Tool', ann=explain_Tool, h=60, w=20, c=self.start_tool)
 
         cmds.showWindow(WINDOW_NAME)
 
@@ -110,9 +112,11 @@ class MclManager(object):
         :return: None
         """
         print("Adding " + self.TOOL_NAME + " to Shelf/Custom")
-        shelf_top_level = mel.eval("global string $gShelfTopLevel;$temp = $gShelfTopLevel")
+        shelf_top_level = mel.eval(
+            "global string $gShelfTopLevel;$temp = $gShelfTopLevel")
         cmds.setParent("%s|Custom" % shelf_top_level)
-        cmds.shelfButton(annotation=self.TOOL_NAME, image1='commandButton.png', command=self.show_gui)
+        cmds.shelfButton(annotation=self.TOOL_NAME,
+                         image1='commandButton.png', command=self.show_gui)
 
     def remove_from_shelf(self):
         """
