@@ -2,47 +2,50 @@ import maya.cmds as cmds
 import random as rand
 import maya.api.OpenMaya as om
 
+import time
+
+
 class MarchingCube(object):
     # 255种情况中与等势面相交的边
     # The edges intersecting with the equipotential surfaces among 255 cases.
-    edgeTable=[
-        0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
+    edgeTable = [
+        0x0, 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
         0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
-        0x190, 0x99 , 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c,
+        0x190, 0x99, 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c,
         0x99c, 0x895, 0xb9f, 0xa96, 0xd9a, 0xc93, 0xf99, 0xe90,
-        0x230, 0x339, 0x33 , 0x13a, 0x636, 0x73f, 0x435, 0x53c,
+        0x230, 0x339, 0x33, 0x13a, 0x636, 0x73f, 0x435, 0x53c,
         0xa3c, 0xb35, 0x83f, 0x936, 0xe3a, 0xf33, 0xc39, 0xd30,
-        0x3a0, 0x2a9, 0x1a3, 0xaa , 0x7a6, 0x6af, 0x5a5, 0x4ac,
+        0x3a0, 0x2a9, 0x1a3, 0xaa, 0x7a6, 0x6af, 0x5a5, 0x4ac,
         0xbac, 0xaa5, 0x9af, 0x8a6, 0xfaa, 0xea3, 0xda9, 0xca0,
-        0x460, 0x569, 0x663, 0x76a, 0x66 , 0x16f, 0x265, 0x36c,
+        0x460, 0x569, 0x663, 0x76a, 0x66, 0x16f, 0x265, 0x36c,
         0xc6c, 0xd65, 0xe6f, 0xf66, 0x86a, 0x963, 0xa69, 0xb60,
-        0x5f0, 0x4f9, 0x7f3, 0x6fa, 0x1f6, 0xff , 0x3f5, 0x2fc,
+        0x5f0, 0x4f9, 0x7f3, 0x6fa, 0x1f6, 0xff, 0x3f5, 0x2fc,
         0xdfc, 0xcf5, 0xfff, 0xef6, 0x9fa, 0x8f3, 0xbf9, 0xaf0,
-        0x650, 0x759, 0x453, 0x55a, 0x256, 0x35f, 0x55 , 0x15c,
+        0x650, 0x759, 0x453, 0x55a, 0x256, 0x35f, 0x55, 0x15c,
         0xe5c, 0xf55, 0xc5f, 0xd56, 0xa5a, 0xb53, 0x859, 0x950,
-        0x7c0, 0x6c9, 0x5c3, 0x4ca, 0x3c6, 0x2cf, 0x1c5, 0xcc ,
+        0x7c0, 0x6c9, 0x5c3, 0x4ca, 0x3c6, 0x2cf, 0x1c5, 0xcc,
         0xfcc, 0xec5, 0xdcf, 0xcc6, 0xbca, 0xac3, 0x9c9, 0x8c0,
         0x8c0, 0x9c9, 0xac3, 0xbca, 0xcc6, 0xdcf, 0xec5, 0xfcc,
-        0xcc , 0x1c5, 0x2cf, 0x3c6, 0x4ca, 0x5c3, 0x6c9, 0x7c0,
+        0xcc, 0x1c5, 0x2cf, 0x3c6, 0x4ca, 0x5c3, 0x6c9, 0x7c0,
         0x950, 0x859, 0xb53, 0xa5a, 0xd56, 0xc5f, 0xf55, 0xe5c,
-        0x15c, 0x55 , 0x35f, 0x256, 0x55a, 0x453, 0x759, 0x650,
+        0x15c, 0x55, 0x35f, 0x256, 0x55a, 0x453, 0x759, 0x650,
         0xaf0, 0xbf9, 0x8f3, 0x9fa, 0xef6, 0xfff, 0xcf5, 0xdfc,
-        0x2fc, 0x3f5, 0xff , 0x1f6, 0x6fa, 0x7f3, 0x4f9, 0x5f0,
+        0x2fc, 0x3f5, 0xff, 0x1f6, 0x6fa, 0x7f3, 0x4f9, 0x5f0,
         0xb60, 0xa69, 0x963, 0x86a, 0xf66, 0xe6f, 0xd65, 0xc6c,
-        0x36c, 0x265, 0x16f, 0x66 , 0x76a, 0x663, 0x569, 0x460,
+        0x36c, 0x265, 0x16f, 0x66, 0x76a, 0x663, 0x569, 0x460,
         0xca0, 0xda9, 0xea3, 0xfaa, 0x8a6, 0x9af, 0xaa5, 0xbac,
-        0x4ac, 0x5a5, 0x6af, 0x7a6, 0xaa , 0x1a3, 0x2a9, 0x3a0,
+        0x4ac, 0x5a5, 0x6af, 0x7a6, 0xaa, 0x1a3, 0x2a9, 0x3a0,
         0xd30, 0xc39, 0xf33, 0xe3a, 0x936, 0x83f, 0xb35, 0xa3c,
-        0x53c, 0x435, 0x73f, 0x636, 0x13a, 0x33 , 0x339, 0x230,
+        0x53c, 0x435, 0x73f, 0x636, 0x13a, 0x33, 0x339, 0x230,
         0xe90, 0xf99, 0xc93, 0xd9a, 0xa96, 0xb9f, 0x895, 0x99c,
-        0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x99 , 0x190,
+        0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x99, 0x190,
         0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
-        0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0   
+        0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
     ]
 
     # 255种情况中生成的三角形的顶点编号
     # The vertex indices of the triangles generated in 255 cases.
-    triTable =[
+    triTable = [
         [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
         [0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
         [0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
@@ -321,38 +324,45 @@ class MarchingCube(object):
     # 六个面上的顶点的共同点
     # The common point of the vertices on six faces.
     points = [
-        [0,-1,-1],
-        [2,-1,-1],
-        [-1,0,-1],
-        [-1,2,-1],
-        [-1,-1,0],
-        [-1,-1,2]
+        [0, -1, -1],
+        [2, -1, -1],
+        [-1, 0, -1],
+        [-1, 2, -1],
+        [-1, -1, 0],
+        [-1, -1, 2]
     ]
 
     # 六个面上的顶点的排布顺序
     # The arrangement order of vertices on six faces.
     faces = [
-        [(0,0,0),(0,1,0),(0,2,0),(0,2,1),(0,2,2),(0,1,2),(0,0,2),(0,0,1)],
-        [(2,0,1),(2,0,2),(2,1,2),(2,2,2),(2,2,1),(2,2,0),(2,1,0),(2,0,0)],#
-        [(0,0,1),(0,0,2),(1,0,2),(2,0,2),(2,0,1),(2,0,0),(1,0,0),(0,0,0)],#
-        [(0,2,0),(1,2,0),(2,2,0),(2,2,1),(2,2,2),(1,2,2),(0,2,2),(0,2,1)],
-        [(0,0,0),(1,0,0),(2,0,0),(2,1,0),(2,2,0),(1,2,0),(0,2,0),(0,1,0)],#
-        [(0,1,2),(0,2,2),(1,2,2),(2,2,2),(2,1,2),(2,0,2),(1,0,2),(0,0,2)]
+        [(0, 0, 0), (0, 1, 0), (0, 2, 0), (0, 2, 1),
+         (0, 2, 2), (0, 1, 2), (0, 0, 2), (0, 0, 1)],
+        [(2, 0, 1), (2, 0, 2), (2, 1, 2), (2, 2, 2),
+         (2, 2, 1), (2, 2, 0), (2, 1, 0), (2, 0, 0)],
+        [(0, 0, 1), (0, 0, 2), (1, 0, 2), (2, 0, 2),
+         (2, 0, 1), (2, 0, 0), (1, 0, 0), (0, 0, 0)],
+        [(0, 2, 0), (1, 2, 0), (2, 2, 0), (2, 2, 1),
+         (2, 2, 2), (1, 2, 2), (0, 2, 2), (0, 2, 1)],
+        [(0, 0, 0), (1, 0, 0), (2, 0, 0), (2, 1, 0),
+         (2, 2, 0), (1, 2, 0), (0, 2, 0), (0, 1, 0)],
+        [(0, 1, 2), (0, 2, 2), (1, 2, 2), (2, 2, 2),
+         (2, 1, 2), (2, 0, 2), (1, 0, 2), (0, 0, 2)]
     ]
 
     # 八个顶点的坐标
     # The coordinates of the eight vertices.
     new_points = [
-        (0,0,2),(2,0,2),(2,0,0),(0,0,0),(0,2,2),(2,2,2),(2,2,0),(0,2,0)
+        (0, 0, 2), (2, 0, 2), (2, 0, 0), (0, 0,
+                                          0), (0, 2, 2), (2, 2, 2), (2, 2, 0), (0, 2, 0)
     ]
 
     # 八个顶点的位进制
     # Octal representation of eight vertices.
     mul = [8, 1, 128, 16, 4, 2, 64, 32]
 
-
     # 初始化marching_cube
     # Initialize marching_cube.
+
     def __init__(self):
         # 定义长宽高大小
         # Define the dimensions of length, width, and height.
@@ -362,12 +372,14 @@ class MarchingCube(object):
 
         # 创建底部平台
         # Create a bottom platform.
-        cmds.polyCreateFacet(p=[(0.5,0.5,0.5),(0.5,0.5,40.5),(40.5,0.5,40.5),(40.5,0.5,0.5)])
-        
+        cmds.polyCreateFacet(
+            p=[(0.5, 0.5, 0.5), (0.5, 0.5, 40.5), (40.5, 0.5, 40.5), (40.5, 0.5, 0.5)])
+
         # 初始化所有顶点状态
         # Initialize the state of all vertices.
-        self.mesh = [[[1.0 for _ in range(self.max_z+1)] for _ in range(self.max_y+1)] for _ in range(self.max_x+1)]
-    
+        self.mesh = [[[1.0 for _ in range(
+            self.max_z+1)] for _ in range(self.max_y+1)] for _ in range(self.max_x+1)]
+
     # 生成 Mesh 的点列表、边数列表、面列表
     # Generate lists of points, edges, and faces for the mesh.
     point_list = []
@@ -378,9 +390,17 @@ class MarchingCube(object):
     # The generated grid.
     new_mesh = om.MFnMesh()
 
+    last_time = 0
+
     # 球状画笔造成点状态改变
     # Spherical brush causes point state changes.
     def addPoint(self, point, dist, addition):
+        now_time = time.time()
+
+        if (now_time-self.last_time > 0.100 * (dist ** 0.5)):
+            self.last_time = now_time
+        else:
+            return
         # self.point_list = []
         # self.num_list = []
         # self.face_list = []
@@ -412,14 +432,14 @@ class MarchingCube(object):
         #                                 type += addition * self.mul[i2*4 + j2*2 + k2]
         #                 if (type!=255):
         #                     self.makeCube(type,1,i1,j1,k1,[i1==0,i1==self.max_x-1,0,j1==self.max_y-1,k1==0,k1==self.max_z-1])
-            
+
         # for i in range(self.max_x + 1):
         #     for j in range(self.max_y + 1):
         #         for k in range(self.max_z + 1):
         #             other_point = om.MPoint(i, j, k)
         #             if(other_point.distanceTo(point)<dist):
         #                 self.mesh[i][j][k] = addition
-        
+
         # self.new_mesh.create(self.point_list, self.face_list, self.num_list)
         # self.new_mesh.setName("TmpMesh")
 
@@ -438,7 +458,8 @@ class MarchingCube(object):
         # cmds.polyUnite(mesh_list,ch=False)
         # 被改变的区块初始化
         # The initialized blocks that have been altered.
-        changed_cube = mesh = [[[0 for _ in range(self.max_z//8)] for _ in range(self.max_y//8)] for _ in range(self.max_x//8)]
+        changed_cube = mesh = [[[0 for _ in range(
+            self.max_z//8)] for _ in range(self.max_y//8)] for _ in range(self.max_x//8)]
 
         # 统计所有被改变的区块
         # Counting all the changed blocks.
@@ -446,50 +467,50 @@ class MarchingCube(object):
             for j in range(self.max_y+1):
                 for k in range(self.max_z+1):
                     other_point = om.MPoint(i, j, k)
-                    if(other_point.distanceTo(point)<dist):
-                        if(self.mesh[i][j][k]>=1.0 and self.mesh[i][j][k]+addition<1.0)\
-                            or(self.mesh[i][j][k]<1.0 and self.mesh[i][j][k]+addition>=1.0):
+                    if (other_point.distanceTo(point) < dist):
+                        if (self.mesh[i][j][k] >= 1.0 and self.mesh[i][j][k]+addition < 1.0)\
+                                or (self.mesh[i][j][k] < 1.0 and self.mesh[i][j][k]+addition >= 1.0):
                             for t in range(8):
-                                i-=t//4
-                                j-=(t%4)//2
-                                k-=t%2
-                                if(0<=i and i<self.max_x and 0<=j and j<self.max_y and 0<=k and k<self.max_z):
-                                    changed_cube[i//8][j//8][k//8] = 1 
-                                i+=t//4
-                                j+=(t%4)//2
-                                k+=t%2
+                                i -= t//4
+                                j -= (t % 4)//2
+                                k -= t % 2
+                                if (0 <= i and i < self.max_x and 0 <= j and j < self.max_y and 0 <= k and k < self.max_z):
+                                    changed_cube[i//8][j//8][k//8] = 1
+                                i += t//4
+                                j += (t % 4)//2
+                                k += t % 2
                         self.mesh[i][j][k] += addition
-                        if(self.mesh[i][j][k]<0):
+                        if (self.mesh[i][j][k] < 0):
                             self.mesh[i][j][k] = 0
-                        if(self.mesh[i][j][k]>2.0):
+                        if (self.mesh[i][j][k] > 2.0):
                             self.mesh[i][j][k] = 2.0
         # target = cmds.listRelatives(cmds.ls(type='mesh'), allParents = True)
         # cmds.delete(target)
 
         # cmds.polyCreateFacet(p=[(-20,0,-20),(-20,0,20),(20,0,20),(20,0,-20)])
-        
+
         # 重建被改变的区块
         # Reconstructing the altered blocks.
         for i in range(self.max_x//8):
             for j in range(self.max_y//8):
                 for k in range(self.max_z//8):
-                    if(changed_cube[i][j][k]):
+                    if (changed_cube[i][j][k]):
                         string = f'mesh_{i}_{j}_{k}'
                         cube_list = cmds.ls(string)
                         print(cube_list)
-                        if(cube_list != []):
+                        if (cube_list != []):
                             for cube in cube_list:
-                                target = cmds.listRelatives(cube, allParents = True)
+                                target = cmds.listRelatives(
+                                    cube, allParents=True)
                                 cmds.delete(target)
                         self.render(i, j, k)
-
 
         # 选中所有 Mesh
         # Select all meshes.
         cmds.select(cmds.ls(type='mesh'))
 
     # 计算面片的正确位置，并将结果存入生成 Mesh 的点列表、边数列表、面列表
-    # Calculate the correct positions of the faces and 
+    # Calculate the correct positions of the faces and
     # store the results in the generated Mesh's vertex list, edge list, and face list.
     def showmesh(self, vertices, size, p_x, p_y, p_z):
         self.face_list.append(len(vertices))
@@ -498,7 +519,7 @@ class MarchingCube(object):
             x = (x - 1) * size * 0.5 + 1 + p_x * size
             y = (y - 1) * size * 0.5 + 1 + p_y * size
             z = (z - 1) * size * 0.5 + 1 + p_z * size
-            point = om.MPoint(x,y,z)
+            point = om.MPoint(x, y, z)
             if point in self.point_list:
                 self.num_list.append(self.point_list.index(point))
             else:
@@ -508,9 +529,9 @@ class MarchingCube(object):
     # 生成某一区块
     # Generate a specific block.
     def render(self, p_x, p_y, p_z):
-        
+
         # 生成 Mesh 的点列表、边数列表、面列表归零
-        # Resetting the point list, edge count list, 
+        # Resetting the point list, edge count list,
         # and face list of the generated mesh to zero.
         self.point_list = []
         self.num_list = []
@@ -523,10 +544,11 @@ class MarchingCube(object):
                 for k in range(p_z*8, p_z*8+8):
                     type = 0
                     for t in range(8):
-                        if self.mesh[i + t//4][j + (t % 4) // 2][k + t % 2] >= 1 :
+                        if self.mesh[i + t//4][j + (t % 4) // 2][k + t % 2] >= 1:
                             type += self.mul[t]
-                    if (type!=255):
-                        self.makeCube(type,1,i,j,k,[i==0,i==self.max_x-1,0,j==self.max_y-1,k==0,k==self.max_z-1])
+                    if (type != 255):
+                        self.makeCube(type, 1, i, j, k, [
+                                      i == 0, i == self.max_x-1, 0, j == self.max_y-1, k == 0, k == self.max_z-1])
 
         # 生成 Mesh 并添加材质
         # Generate mesh and add materials.
@@ -537,58 +559,61 @@ class MarchingCube(object):
 
         mesh_objects = cmds.ls("TmpMesh*")[0]
 
-        shading_group = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)
-        cmds.connectAttr(default_material + ".outColor", shading_group + '.surfaceShader',f = True)
-        cmds.sets(mesh_objects, edit = True, forceElement = shading_group)
-        cmds.polySoftEdge(mesh_objects, cch = 1, a="0")
+        shading_group = cmds.sets(
+            renderable=True, noSurfaceShader=True, empty=True)
+        cmds.connectAttr(default_material + ".outColor",
+                         shading_group + '.surfaceShader', f=True)
+        cmds.sets(mesh_objects, edit=True, forceElement=shading_group)
+        cmds.polySoftEdge(mesh_objects, cch=1, a="0")
 
         # 改名
         # Renaming.
-        target = cmds.listRelatives(cmds.rename(mesh_objects, f'mesh_{p_x}_{p_y}_{p_z}'), allParents = True)
+        target = cmds.listRelatives(cmds.rename(
+            mesh_objects, f'mesh_{p_x}_{p_y}_{p_z}'), allParents=True)
         cmds.rename(target, f'block_{p_x}_{p_y}_{p_z}')
 
-    
     # 生成单元
     # Generate cell.
-    def makeCube(self, type, size, p_x, p_y, p_z,show):
-        
+    def makeCube(self, type, size, p_x, p_y, p_z, show):
+
         # print(type)
         selected_faces = []
 
         # 生成非六面上的面
         # Generating faces not on hexahedral sides.
-        for j in range(0,16,3):
-            if(self.triTable[type][j]!=-1):
+        for j in range(0, 16, 3):
+            if (self.triTable[type][j] != -1):
                 self.showmesh(
                     [
                         self.vertices[self.triTable[type][j+2]],
                         self.vertices[self.triTable[type][j+1]],
                         self.vertices[self.triTable[type][j]]
                     ],
-                    size,p_x,p_y,p_z
+                    size, p_x, p_y, p_z
                 )
-        
+
         # 生成六面上的面
         # Generating faces on hexahedral sides.
-        tmp_vertices=[]
+        tmp_vertices = []
         for j in range(6):
-            if(show[j]):
+            if (show[j]):
                 for k in range(16):
-                    if(self.triTable[type][k]!=-1):
-                        (x,y,z)=self.vertices[self.triTable[type][k]]
+                    if (self.triTable[type][k] != -1):
+                        (x, y, z) = self.vertices[self.triTable[type][k]]
                         # print((x,y,z))
-                        if(self.points[j][0]==x or self.points[j][1]==y or self.points[j][2]==z):
-                            tmp_vertices.append(self.vertices[self.triTable[type][k]])
+                        if (self.points[j][0] == x or self.points[j][1] == y or self.points[j][2] == z):
+                            tmp_vertices.append(
+                                self.vertices[self.triTable[type][k]])
                 tmp = 1
                 for k in range(8):
-                    if not (type&tmp):
+                    if not (type & tmp):
                         tmp_vertices.append(self.new_points[k])
-                    tmp*=2
+                    tmp *= 2
                 new_vertices = []
                 for k in range(8):
-                    if(self.faces[j][k] in tmp_vertices):
+                    if (self.faces[j][k] in tmp_vertices):
                         new_vertices.append(self.faces[j][k])
-                self.showmesh(new_vertices,size,p_x,p_y,p_z)
+                self.showmesh(new_vertices, size, p_x, p_y, p_z)
 
     def get_distance(self, position):
         """
@@ -597,13 +622,13 @@ class MarchingCube(object):
         :param position: kwarg, world-pos (x,y,z)
         :return: distance(float)
         """
-        if 0<position[0]<8 and 0<position[1]<8 and 0<position[2]<8:
+        if 0 < position[0] < 8 and 0 < position[1] < 8 and 0 < position[2] < 8:
             x = int(position[0])
             y = int(position[1])
             z = int(position[2])
             lerpx = position[0] - x
             lerpy = position[1] - y
             lerpz = position[2] - z
-            return 1.0/3 *( self.mesh[x+1][y][z]*lerpx + self.mesh[x][y+1][z]*lerpy + self.mesh[x][y][z+1]*lerpz + self.mesh[x][y][z]*(3-lerpx-lerpy-lerpz) )
+            return 1.0/3 * (self.mesh[x+1][y][z]*lerpx + self.mesh[x][y+1][z]*lerpy + self.mesh[x][y][z+1]*lerpz + self.mesh[x][y][z]*(3-lerpx-lerpy-lerpz))
         else:
             return 1

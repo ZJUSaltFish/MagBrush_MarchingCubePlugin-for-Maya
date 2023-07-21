@@ -5,7 +5,7 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
 
-#from marching_cube_np import MarchingCubeNp as mcnp
+# from marching_cube_np import MarchingCubeNp as mcnp
 from marching_cube import MarchingCube
 
 from threading import Thread, Event
@@ -14,14 +14,18 @@ import asyncio
 
 
 from enum import Enum
+
+
 class BrushTypes(Enum):
     sphere = 'mcl_sphere_brush'
     cube = 'mcl_cube_brush'
+
 
 class BrushModes(Enum):
     add = 0
     subtract = 1
     smooth = 2
+
 
 class BrushTool():
     CONTEXT_NAME = "BrushContext"
@@ -45,13 +49,13 @@ class BrushTool():
         # brush mode, add, subtract, smooth, etc
         self._brush_mode = BrushModes.add
         # python multi-thread for controlling maya brush. Ugly but I dont have better way.
-        #self._brush_event = Event()
-        #self._brush_async = None
-        #self._event_loop = asyncio.new_event_loop()
+        # self._brush_event = Event()
+        # self._brush_async = None
+        # self._event_loop = asyncio.new_event_loop()
         # registering
         self._DRAGGER_CONTEXT = cmds.draggerContext(self.CONTEXT_NAME, initialize=self._switch_on, finalize=self._switch_off, edit=False,
-                            image1='commandButton.png', dragCommand = self._draw, pressCommand = self._draw)
-        #self._KEY_EVENT = om.MEventMessage.addEventCallback("KeyDown", self._hotkey_callback)
+                                                    image1='commandButton.png', dragCommand=self._draw, pressCommand=self._draw)
+        # self._KEY_EVENT = om.MEventMessage.addEventCallback("KeyDown", self._hotkey_callback)
 
     def enable(self, *brush_type):
         """
@@ -95,13 +99,16 @@ class BrushTool():
     def set_hardness(self, hardness):
         self._brush_hardness = hardness
         if (hardness < 1):
-            cmds.setAttr('%s.transparency[1].transparency_Position' % self._brush_mat, 1 - hardness)
+            cmds.setAttr(
+                '%s.transparency[1].transparency_Position' % self._brush_mat, 1 - hardness)
         else:
-            cmds.setAttr('%s.transparency[1].transparency_Position' % self._brush_mat, 0.001)
+            cmds.setAttr(
+                '%s.transparency[1].transparency_Position' % self._brush_mat, 0.001)
 
     def set_strength(self, strength):
         self._brush_strength = strength
-        cmds.setAttr('%s.ambientColor' % self._brush_mat, strength, strength, strength, type="double3")
+        cmds.setAttr('%s.ambientColor' % self._brush_mat,
+                     strength, strength, strength, type="double3")
 
     def _switch_on(self):
         """
@@ -144,31 +151,35 @@ class BrushTool():
         self.update_mode()
         # then get brush location
         location = self._ray_check()
-        #location = self._ray_march()
+        # location = self._ray_march()
         if location is None:
             self._hide_brush()
         else:
             # place brush at location
-            self._render_brush(location= location)
+            self._render_brush(location=location)
             # edit marching cubes at location
             (x, y, z, t) = location
             if self._brush_mode == BrushModes.subtract:
                 # press shift to subtract
-                self.MC.addPoint(om.MPoint(x, y, z), self._brush_radius, self._brush_strength)
+                self.MC.addPoint(om.MPoint(x, y, z),
+                                 self._brush_radius, self._brush_strength)
             else:
-                self.MC.addPoint(om.MPoint(x, y, z), self._brush_radius, -self._brush_strength)
+                self.MC.addPoint(om.MPoint(x, y, z),
+                                 self._brush_radius, -self._brush_strength)
             # self.MC.render()
 
     def _ray_check(self):
-        mouse_pos = cmds.draggerContext(self.CONTEXT_NAME, query=True, dragPoint=True)
+        mouse_pos = cmds.draggerContext(
+            self.CONTEXT_NAME, query=True, dragPoint=True)
 
         viewport_pos = om.MPoint(mouse_pos[0], mouse_pos[1], 0)
 
-        #projection_matrix = om.MMatrix(omui.M3dView().active3dView().projectionMatrix())
+        # projection_matrix = om.MMatrix(omui.M3dView().active3dView().projectionMatrix())
 
         ray_source = om.MPoint()
         ray_direction = om.MVector()
-        omui.M3dView().active3dView().viewToWorld(int(viewport_pos[0]), int(viewport_pos[1]), ray_source, ray_direction)
+        omui.M3dView().active3dView().viewToWorld(
+            int(viewport_pos[0]), int(viewport_pos[1]), ray_source, ray_direction)
 
         selection_list = om.MGlobal.getActiveSelectionList()
 
@@ -186,7 +197,7 @@ class BrushTool():
             hit_return = fn_mesh.closestIntersection(om.MFloatPoint(ray_source), om.MFloatVector(ray_direction),
                                                      om.MSpace.kWorld, 1000, False)
             if hit_return:
-                if final_hit_return == [] or hit_return[1]<final_hit_return[1]:
+                if final_hit_return == [] or hit_return[1] < final_hit_return[1]:
                     final_hit_return = hit_return
                 # hit = True
                 # intersect_point = hit_return[0]
@@ -207,19 +218,21 @@ class BrushTool():
         :return:
         """
         # get mouse position in pixel coordinate
-        mouse_pos = cmds.draggerContext(self.CONTEXT_NAME, query=True, dragPoint=True)
+        mouse_pos = cmds.draggerContext(
+            self.CONTEXT_NAME, query=True, dragPoint=True)
         # convert to MPoint
         viewport_pos = om.MPoint(mouse_pos[0], mouse_pos[1], 0)
         # get the source and direction of ray
         ray_source = om.MPoint()
         ray_direction = om.MVector()
-        omui.M3dView().active3dView().viewToWorld(int(viewport_pos[0]), int(viewport_pos[1]), ray_source, ray_direction)
+        omui.M3dView().active3dView().viewToWorld(
+            int(viewport_pos[0]), int(viewport_pos[1]), ray_source, ray_direction)
         # marching until touch the surface of SDF
         MAX_STEP = 64
         find = False
         for i in range(128):
-            ray_source += ray_direction * 0.5#step:0.5
-            if(self.MC.get_distance(ray_source) < 0.5):
+            ray_source += ray_direction * 0.5  # step:0.5
+            if (self.MC.get_distance(ray_source) < 0.5):
                 find = True
                 break
         if find is False:
@@ -228,9 +241,9 @@ class BrushTool():
             # do a more detailed marching
             for i in range(10):
                 ray_source -= ray_direction * 0.05
-                if(self.MC.get_distance(ray_source) > 0.5):
+                if (self.MC.get_distance(ray_source) > 0.5):
                     break
-            return  ray_source
+            return ray_source
 
     async def _brush_async_control(self):
         while True:
@@ -240,7 +253,8 @@ class BrushTool():
 
     def _brush_threading(self, event):
         while True:
-            print(cmds.draggerContext(self.CONTEXT_NAME, query = True, dragPoint = True))
+            print(cmds.draggerContext(
+                self.CONTEXT_NAME, query=True, dragPoint=True))
             sleep(0.05)
             if event.isSet():
                 break
@@ -252,9 +266,10 @@ class BrushTool():
         :param location: (floatX, floatY, floatZ)
         :return: None
         """
-        if cmds.objExists(self._BRUSH_NAME) :
+        if cmds.objExists(self._BRUSH_NAME):
             cmds.showHidden(self._BRUSH_NAME)
-            cmds.move(location[0], location[1], location[2], self._BRUSH_NAME, absolute=True, worldSpace=True)
+            cmds.move(location[0], location[1], location[2],
+                      self._BRUSH_NAME, absolute=True, worldSpace=True)
             cmds.refresh()
 
     def _hide_brush(self):
@@ -274,17 +289,22 @@ class BrushTool():
             sphereRadius = 10
             sphereStrength = 0.5
             sphereHardness = 1.0
-            cmds.sphere(name = self._BRUSH_NAME, radius=sphereRadius/10)
+            cmds.sphere(name=self._BRUSH_NAME, radius=sphereRadius/10)
             # 将材质赋给球体,并使其不可选中
             cmds.select(self._BRUSH_NAME)
             cmds.sets(forceElement='%sSG' % self._brush_mat)
             # 设置球体的默认ambient颜色值
-            cmds.setAttr('%s.ambientColor' % self._brush_mat, sphereStrength, sphereStrength, sphereStrength, type="double3")
+            cmds.setAttr('%s.ambientColor' % self._brush_mat, sphereStrength,
+                         sphereStrength, sphereStrength, type="double3")
             # 设置球体的默认渐变值
-            cmds.setAttr('%s.transparency[0].transparency_Color' % self._brush_mat, 1.0, 1.0, 1.0, type="double3")
-            cmds.setAttr('%s.transparency[1].transparency_Color' % self._brush_mat, 0, 0, 0, type="double3")
-            cmds.setAttr('%s.transparency[1].transparency_Position' % self._brush_mat, 0.001)
-            cmds.setAttr('%s.transparency[1].transparency_Interp' % self._brush_mat, 1)
+            cmds.setAttr('%s.transparency[0].transparency_Color' %
+                         self._brush_mat, 1.0, 1.0, 1.0, type="double3")
+            cmds.setAttr('%s.transparency[1].transparency_Color' %
+                         self._brush_mat, 0, 0, 0, type="double3")
+            cmds.setAttr(
+                '%s.transparency[1].transparency_Position' % self._brush_mat, 0.001)
+            cmds.setAttr(
+                '%s.transparency[1].transparency_Interp' % self._brush_mat, 1)
             # 将该物体设置为不可选中
             cmds.setAttr(self._BRUSH_NAME + ".overrideEnabled", 1)
             cmds.setAttr(self._BRUSH_NAME + ".overrideDisplayType", 2)
@@ -292,14 +312,13 @@ class BrushTool():
             # make sure self._brush_type is not None
             self._brush_type = BrushTypes.sphere
 
-
     def _create_brush_mat(self):
         """
         Create a rampshader material
         return: material shading node (cmds.shadingNode)
         """
         mat = cmds.shadingNode('rampShader', asShader=True, name="mat")
-        cmds.sets(name='%sSG' % mat, renderable=True, noSurfaceShader=True, empty=True)
+        cmds.sets(name='%sSG' % mat, renderable=True,
+                  noSurfaceShader=True, empty=True)
         cmds.connectAttr('%s.outColor' % mat, '%sSG.surfaceShader' % mat)
         return mat
-
