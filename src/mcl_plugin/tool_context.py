@@ -5,7 +5,9 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
 
+
 # from marching_cube_np import MarchingCubeNp as mcnp
+
 from marching_cube import MarchingCube
 
 from threading import Thread, Event

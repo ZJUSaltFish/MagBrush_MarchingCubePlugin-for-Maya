@@ -1,7 +1,14 @@
+"""
+This is an optimized version of marching cube in maya using numpy 1.21.5
+Algorithm and initial implementation by gaozeke (see marching_cube.py)
+Migration and some optimization by ZJUSaltFish
+"""
+
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
 import random as rd
 import numpy as np
+import math
 
 class MarchingCubeNp(object):
     # 255种情况中与等势面相交的边
@@ -351,29 +358,39 @@ class MarchingCubeNp(object):
     # Octal representation of eight vertices.
     _MUL = [8, 1, 128, 16, 4, 2, 64, 32]
 
-    # 初始化marching_cube
+    # The 8 cubes adjacent to a SDF sample point
+    _ADJACENT_SEQUENCE = [
+        (0,0,0), (0,0,1), (0,1,0), (0,1,1), (1,0,0), (1,0,1), (1,1,0), (1,1,1)
+    ]
+
     # Initialize marching_cube.
     def __init__(self):
+        """
+        Marching cube initialization
+        """
         # 定义长宽高大小
         # num of blocks in x/y/z direction
-        self._size = (5, 5, 5)
+        self._size = np.array([5,5,5])
         # num of cubes in a block (default 8x8x8)
         self._block_size = 8
 
         # internal of sdf sampling. default = 1, which means 1 unit between two sample points
-        self._internal = 1
+        self._interval = 1
 
         # offset of sdf field in (x,y,z).
-        self._offset = (0,0,0)
+        self._offset = np.array([0,0,0])
 
         # 创建底部平台
         # Create a bottom platform.
         cmds.polyCreateFacet(p=[(0.5, 0.5, 0.5), (0.5, 0.5, 40.5), (40.5, 0.5, 40.5), (40.5, 0.5, 0.5)])
 
         # Initialize the SDF sample field.
-        # use numpy array. initialize all samples = 1,
-        # data type = float32 since low poly dont need so accurate (default = float64)
-        self._sdf = np.ones(self._size * self._block_size, dtype=np.float32)
+        self._sdf = np.ones(self._size * self._block_size +1, dtype=np.float32)
+        """
+        use numpy array to represent sdf sample points. 
+        initialize all samples = 1, value range (-1, 1)
+        data type = float32 (low poly dont need so accurate (default = float64))
+        """
 
         # 生成 Mesh 的点列表、边数列表、面列表
         # Generate lists of points, edges, and faces for the mesh.
@@ -393,17 +410,188 @@ class MarchingCubeNp(object):
         :return: None
         """
         # The initialized blocks that have been altered.
-        changed_cube = np.zeros(self._size)
+        #changed_cube = np.zeros(self._size, dtype=np.bool_)
+        changed_blocks = []
 
         # calculate the indices of sample points that should be modified
         # for all points in the bounding box of brush: (the larger internal, the less points)
         # min index = (point - offset - dist)/internal, max index = (point - offset + dist)/internal
-        for i in range(int((point[0] - self._offset[0] - dist) / self._internal), int((point[0] - self._offset[0] + dist) / self._internal) + 1):
-            for j in range(int((point[1] - self._offset[1] - dist) / self._internal), int((point[1] - self._offset[1] + dist) / self._internal) + 1):
-                for k in range(int((point[2] - self._offset[2] - dist) / self._internal), int((point[2] - self._offset[2] + dist) / self._internal) + 1):
+        min_x = max(int((point[0] - self._offset[0] - dist) / self._interval), 0)
+        max_x = min(int((point[0] - self._offset[0] + dist) / self._interval) + 1, self._size[0] * self._block_size -1)
+        min_y = max(int((point[1] - self._offset[1] - dist) / self._interval), 0)
+        max_y = min(int((point[1] - self._offset[1] + dist) / self._interval) + 1, self._size[1] * self._block_size -1)
+        min_z = max(int((point[2] - self._offset[2] - dist) / self._interval), 0)
+        max_z = min(int((point[2] - self._offset[2] + dist) / self._interval) + 1, self._size[0] * self._block_size -1)
+        for i in range(min_x, max_x):
+            for j in range(min_y, max_y):
+                for k in range(min_z, max_z):
                     # pos = index * internal + offset
-                    other_point = om.MPoint(i * self._internal + self._offset[0], j * self._internal + self._offset[1], k * self._internal * self._offset[2])
-                    if other_point.distanceTo(point) <= dist:
+                    other_point = om.MPoint(i * self._interval + self._offset[0], j * self._interval + self._offset[1], k * self._interval + self._offset[2])
+                    if other_point.distanceTo(point) < dist:
+                        # when this sample point is in brush
+                        #block_index = (i // self._block_size, j // self._block_size, k // self._block_size)
+                        #changed_blocks[block_index] = True
+                        value = self._sdf[int(other_point[0])][int(other_point[1])][int(other_point[2])]
+                        value += addition
+
+                        print(value)
+                        self._sdf[int(other_point[0])][int(other_point[1])][int(other_point[2])] = max(0, min(2, value))
 
 
+        # find the block intersect with brush
+        for i in range(self._size[0]):
+            for j in range(self._size[1]):
+                for k in range(self._size[2]):
+                    for vert_index in self._ADJACENT_SEQUENCE:
+                        vert_pos = om.MPoint(
+                            (i * self._block_size + vert_index[0]) * self._interval + self._offset[0],
+                            (j * self._block_size + vert_index[1]) * self._interval + self._offset[1],
+                            (k * self._block_size + vert_index[2]) * self._interval + self._offset[2]
+                        )
+                        if vert_pos.distanceTo(point) < dist:
+                            changed_blocks.append((i,j,k))
+                            break
 
+        # 重建被改变的区块
+        # Reconstructing the altered blocks.
+        for block_index in changed_blocks:
+            mesh_name = f'mesh_{block_index[0]}_{block_index[1]}_{block_index[2]}'
+            cube_list = cmds.ls(mesh_name)
+            if cube_list != []:
+                for cube in cube_list:
+                    target = cmds.listRelatives(cube, allParents=True)
+                    cmds.delete(target)
+            self.render(block_index[0], block_index[1], block_index[2])
+
+    def showmesh(self, vertices, size, p_x, p_y, p_z):
+        """
+        Calculate the correct positions of the faces and
+        store the results in the generated Mesh's vertex list, edge list, and face list.
+        :param vertices:
+        :param size:
+        :param p_x:
+        :param p_y:
+        :param p_z:
+        :return:
+        """
+        self._face_list.append(len(vertices))
+        for i in range(len(vertices)):
+            (x, y, z) = vertices[len(vertices) - i - 1]
+            x = (x - 1) * size * 0.5 + 1 + p_x * size
+            y = (y - 1) * size * 0.5 + 1 + p_y * size
+            z = (z - 1) * size * 0.5 + 1 + p_z * size
+            point = om.MPoint(x,y,z)
+            if point in self._point_list:
+                self._num_list.append(self._point_list.index(point))
+            else:
+                self._point_list.append(point)
+                self._num_list.append(len(self._point_list)-1)
+
+    def render(self, p_x, p_y, p_z):
+        """
+        Generate a specific block.
+        :param p_x:
+        :param p_y:
+        :param p_z:
+        :return: None
+        """
+
+        # Resetting the point list, edge count list,
+        # and face list of the generated mesh to zero.
+        self._point_list = []
+        self._num_list = []
+        self._face_list = []
+
+        # 生成每一个单元
+        # Generate each individual cell.
+        for i in range(p_x * self._block_size, (p_x+1) * self._block_size):
+            for j in range(p_y * self._block_size, (p_y+1) * self._block_size):
+                for k in range(p_z * self._block_size, (p_z+1) * self._block_size):
+                    type = 0
+                    for t in range(8):
+                        if self._sdf[i + t // 4][j + (t % 4) // 2][k + t % 2] >= 1:
+                            type += self._MUL[t]
+                    if (type != 255):
+                        self.makeCube(type, 1, i, j, k, [i == 0, i == self._size[0]*self._block_size - 1, 0, j == self._size[1]*self._block_size - 1, k == 0,
+                                                         k == self._size[2]*self._block_size - 1])
+
+        # Generate mesh and add materials.
+        self._new_mesh.create(self._point_list, self._face_list, self._num_list)
+        self._new_mesh.setName("TmpMesh")
+
+        default_material = 'lambert1'
+
+        mesh_objects = cmds.ls("TmpMesh*")[0]
+
+        shading_group = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)
+        cmds.connectAttr(default_material + ".outColor", shading_group + '.surfaceShader', f=True)
+        cmds.sets(mesh_objects, edit=True, forceElement=shading_group)
+        cmds.polySoftEdge(mesh_objects, cch=1, a="0")
+
+        # Renaming.
+        target = cmds.listRelatives(cmds.rename(mesh_objects, f'mesh_{p_x}_{p_y}_{p_z}'), allParents=True)
+        cmds.rename(target, f'block_{p_x}_{p_y}_{p_z}')
+
+    def makeCube(self, type, size, p_x, p_y, p_z, show):
+        """
+        This function generates a single cell(cube)
+        :param type:
+        :param size:
+        :param p_x:
+        :param p_y:
+        :param p_z:
+        :param show:
+        :return:
+        """
+        # 生成非六面上的面
+        # Generating faces not on hexahedral sides.
+        for j in range(0, 16, 3):
+            if self._TRI_TABLE[type][j] != -1:
+                self.showmesh(
+                    [
+                        self._VERTICES[self._TRI_TABLE[type][j + 2]],
+                        self._VERTICES[self._TRI_TABLE[type][j + 1]],
+                        self._VERTICES[self._TRI_TABLE[type][j]]
+                    ],
+                    size, p_x, p_y, p_z
+                )
+
+        # 生成六面上的面
+        # Generating faces on hexahedral sides.
+        tmp_vertices = []
+        for j in range(6):
+            if show[j]:
+                for k in range(16):
+                    if self._TRI_TABLE[type][k] != -1:
+                        (x, y, z) = self._VERTICES[self._TRI_TABLE[type][k]]
+                        # print((x,y,z))
+                        if self._POINTS[j][0] == x or self._POINTS[j][1] == y or self._POINTS[j][2] == z:
+                            tmp_vertices.append(self._VERTICES[self._TRI_TABLE[type][k]])
+                tmp = 1
+                for k in range(8):
+                    if not (type & tmp):
+                        tmp_vertices.append(self._CUBE_POINTS[k])
+                    tmp *= 2
+                new_vertices = []
+                for k in range(8):
+                    if self._FACES[j][k] in tmp_vertices:
+                        new_vertices.append(self._FACES[j][k])
+                self.showmesh(new_vertices, size, p_x, p_y, p_z)
+
+    def get_distance(self, position):
+        """
+        This function receives a world space point, calculates its distance, then returns distance
+        distance: the distance of a world space point to surface. calculated using sample points from Marching Cubes
+        :param position: kwarg, world-pos (x,y,z)
+        :return: distance(float)
+        """
+        if 0<position[0]<8 and 0<position[1]<8 and 0<position[2]<8:
+            x = int(position[0])
+            y = int(position[1])
+            z = int(position[2])
+            lerpx = position[0] - x
+            lerpy = position[1] - y
+            lerpz = position[2] - z
+            return 1.0/3 *( self.mesh[x+1][y][z]*lerpx + self.mesh[x][y+1][z]*lerpy + self.mesh[x][y][z+1]*lerpz + self.mesh[x][y][z]*(3-lerpx-lerpy-lerpz) )
+        else:
+            return 1
