@@ -87,7 +87,10 @@ class MyWindow():
         self.sliderB
         self.sliderC
 
-
+    def E(self):
+        marching_cube_np.init_face()
+    def F(self):
+        marching_cube_np.init_sphere()
 
     def sliderA(self):
         print ("sliderA")
