@@ -5,7 +5,7 @@ import maya.cmds as cmd
 import math
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from maya import cmds
-import marching_cube_np
+#import marching_cube_np
 
 qtVersion = cmds.about(qtVersion=True)
 
@@ -57,33 +57,63 @@ class MclGui():
     def A(self):
         # 创建默认的球体
         self.sphereRadius = 10
-        sphereStrength = 0.5
+        self.sphereStrength = 0.5
         sphereHardness = 1.0
+        self.ui.horizontalSlider_A.setValue(10)
+        self.ui.horizontalSlider_B.setValue(50)
+        self.ui.horizontalSlider_C.setValue(100)
+        self.add_green = (0.343, 0.684, 0.306)
+        self.erase_red = (0.951, 0.311, 0.215)
         self.sphere = cmds.polySphere(radius=self.sphereRadius / 10)[0]
         cmds.addAttr(self.sphere, attributeType='float', longName="radius", defaultValue=self.sphereRadius)
-        cmds.addAttr(self.sphere, attributeType='float', longName="strength", defaultValue=sphereStrength)
+        cmds.addAttr(self.sphere, attributeType='float', longName="strength", defaultValue=self.sphereStrength)
         cmds.addAttr(self.sphere, attributeType='float', longName="hardness", defaultValue=sphereHardness)
+        cmds.addAttr(self.sphere, attributeType='bool', longName="isErase", defaultValue=False)
         # 创建一个rampshader 材质
         self.mat = cmds.shadingNode('rampShader', asShader=True, name="mat")
         cmds.sets(name='%sSG' % self.mat, renderable=True, noSurfaceShader=True, empty=True)
         cmds.connectAttr('%s.outColor' % self.mat, '%sSG.surfaceShader' % self.mat)
+        # 去除光照
+        cmds.setAttr('%s.specularity' % self.mat, 0)
         # 将材质赋给球体,并使其不可选中
         cmds.select(self.sphere)
         cmds.sets(forceElement='%sSG' % self.mat)
         # 设置球体的默认ambient颜色值
-        cmds.setAttr('%s.ambientColor' % self.mat, sphereStrength, sphereStrength, sphereStrength, type="double3")
+        if (cmds.getAttr(self.sphere + '.isErase')):
+            cmds.setAttr('%s.ambientColor' % self.mat, self.sphereStrength * self.erase_red[0], self.sphereStrength * self.erase_red[1],
+                         self.sphereStrength * self.erase_red[2], type="double3")
+        else:
+            cmds.setAttr('%s.ambientColor' % self.mat, self.sphereStrength * self.add_green[0], self.sphereStrength * self.add_green[1],
+                         self.sphereStrength * self.add_green[2], type="double3")
         # 设置球体的默认渐变值
         cmds.setAttr('%s.transparency[0].transparency_Color' % self.mat, 1.0, 1.0, 1.0, type="double3")
-        cmds.setAttr('%s.transparency[1].transparency_Color' % self.mat, 0, 0, 0, type="double3")
+        cmds.setAttr('%s.transparency[1].transparency_Color' % self.mat, 0.6, 0.6, 0.6, type="double3")
         cmds.setAttr('%s.transparency[1].transparency_Position' % self.mat, 0.001)
         cmds.setAttr('%s.transparency[1].transparency_Interp' % self.mat, 1)
         # 将该物体设置为不可选中
         cmds.setAttr(self.sphere + ".overrideEnabled", 1)
         cmds.setAttr(self.sphere + ".overrideDisplayType", 2)
         cmds.select(clear=True)
-    #减去画笔
+
+    #画笔的增减模式
     def B(self):
+        self.A
+        self.sliderC
         print ("B")
+
+        if (cmds.getAttr(self.sphere + '.isErase') == False):
+            cmds.setAttr(self.sphere + '.isErase', True)
+        else:
+            cmds.setAttr(self.sphere + '.isErase', False)
+        #加减画笔有不同颜色
+        if (cmds.getAttr(self.sphere + '.isErase')):
+            cmds.setAttr('%s.ambientColor' % self.mat, self.strength * self.erase_red[0], self.strength * self.erase_red[1],
+                         self.strength * self.erase_red[2], type="double3")
+        else:
+            cmds.setAttr('%s.ambientColor' % self.mat, self.strength * self.add_green[0], self.strength * self.add_green[1],
+                         self.strength * self.add_green[2], type="double3")
+
+        
     #方形画笔
     def C(self):
         print ("C")
@@ -97,11 +127,17 @@ class MclGui():
 
     #创建地形1
     def E(self):
-        marching_cube_np.init_face()
+        print("E")
+        #marching_cube_np.init_face()
 
     #创建地形2
     def F(self):
-        marching_cube_np.init_sphere()
+        print("F")
+        #marching_cube_np.init_sphere()
+
+    #清除地形
+    def G(self):
+        print("G")
 
     #画笔大小
     def sliderA(self):
@@ -118,22 +154,27 @@ class MclGui():
     def sliderB(self):
         print ("sliderB")
         self.A
-        self.Hardness = self.ui.horizontalSlider_B.value()
+        self.Hardness = self.ui.horizontalSlider_B.value()/100
         # 更新球体的硬度
         cmds.setAttr(self.sphere + '.hardness', self.Hardness)
         if (self.Hardness < 1):
             cmds.setAttr('%s.transparency[1].transparency_Position' % self.mat, 1 - self.Hardness)
-        else:
-            cmds.setAttr('%s.transparency[1].transparency_Position' % self.mat, 0.001)
+        #else:
+            #cmds.setAttr('%s.transparency[1].transparency_Position' % self.mat, 0.001)
 
     #画笔强度
     def sliderC(self):
         print ("sliderC")
         self.A
-        self.Strength = self.ui.horizontalSlider_C.value()
+        self.strength = self.ui.horizontalSlider_C.value()/100
         # 更新球体的强度/ambient颜色
-        cmds.setAttr(self.sphere + '.strength', self.Strength)
-        cmds.setAttr('%s.ambientColor' % self.mat, self.Strength, self.Strength, self.Strength, type="double3")
+        cmds.setAttr(self.sphere + '.strength', self.strength)
+        if (cmds.getAttr(self.sphere + '.isErase')):
+            cmds.setAttr('%s.ambientColor' % self.mat, self.strength * self.erase_red[0], self.strength * self.erase_red[1],
+                         self.strength * self.erase_red[2], type="double3")
+        else:
+            cmds.setAttr('%s.ambientColor' % self.mat, self.strength * self.add_green[0], self.strength * self.add_green[1],
+                         self.strength * self.add_green[2], type="double3")
 
     #地形区块大小
     def terrainSliderA(self):

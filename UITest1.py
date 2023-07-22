@@ -38,12 +38,14 @@ class Ui_MainWindow(object):
         self.label_5.setObjectName("label_5")
         self.horizontalSlider_C = QtWidgets.QSlider(self.page)
         self.horizontalSlider_C.setGeometry(QtCore.QRect(90, 300, 211, 16))
+        self.horizontalSlider_C.setMinimum(10)
         self.horizontalSlider_C.setMaximum(100)
         self.horizontalSlider_C.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider_C.setObjectName("horizontalSlider_C")
         self.horizontalSlider_A = QtWidgets.QSlider(self.page)
         self.horizontalSlider_A.setGeometry(QtCore.QRect(90, 200, 211, 16))
-        self.horizontalSlider_A.setMaximum(100)
+        self.horizontalSlider_A.setMinimum(1)
+        self.horizontalSlider_A.setMaximum(50)
         self.horizontalSlider_A.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider_A.setObjectName("horizontalSlider_A")
         self.label_2 = QtWidgets.QLabel(self.page)
@@ -124,7 +126,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.toolBox.setCurrentIndex(1)
+        self.toolBox.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
