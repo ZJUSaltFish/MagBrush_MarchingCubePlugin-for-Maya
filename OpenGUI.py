@@ -1,3 +1,5 @@
+import inspect
+import os
 import sys
 import maya.cmds as cmd
 import math
@@ -12,6 +14,8 @@ from PySide2 import QtCore
 from PySide2 import QtWidgets
 from PySide2 import QtUiTools
 
+
+
 uifile_path = "D:\GitHubProgram\Mayapy_FinalProject\\UITest1.ui"
 
 def loadui(uifile_path):
@@ -21,7 +25,7 @@ def loadui(uifile_path):
     uifile.close()
     return uiWindow
 
-class MyWindow():
+class MclGui():
     def __init__(self, parent=None):
         self.ui = loadui(uifile_path)
         self.ui.show()
@@ -122,21 +126,6 @@ class MyWindow():
         cmds.setAttr(self.sphere + '.strength', self.Strength)
         cmds.setAttr('%s.ambientColor' % self.mat, self.Strength, self.Strength, self.Strength, type="double3")
 
-    def terrainSliderA(self):
-        self.marching_cube_np._size
-        self._size = self.ui.MapSlider_1.value()
-
-    def terrainSliderB(self):
-        self.marching_cube_np.init_face()
-        self._size[0] = self.ui.MapSlider_2.value()
-
-    def terrainSliderA(self):
-        self.marching_cube_np.init_face()
-        self._size[1] = self.ui.MapSlider_3.value()
-
-    def terrainSliderA(self):
-        self.marching_cube_np.init_face()
-        self._size[2] = self.ui.MapSlider_4.value()
 
 if __name__ == '__main__':
-    myWindow = MyWindow()
+    myWindow = MclGui()

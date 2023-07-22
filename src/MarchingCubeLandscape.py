@@ -11,6 +11,16 @@ script_file = inspect.getframeinfo(inspect.currentframe()).filename
 script_dir = os.path.dirname(os.path.abspath(script_file))
 script_dir += '\\numpy'
 sys.path.append(script_dir)
+# Add pyqt5 to maya python dir
+script_file = inspect.getframeinfo(inspect.currentframe()).filename
+script_dir = os.path.dirname(os.path.abspath(script_file))
+script_dir += '\\PyQt5'
+sys.path.append(script_dir)
+# Add PySide2 to maya python dir
+script_file = inspect.getframeinfo(inspect.currentframe()).filename
+script_dir = os.path.dirname(os.path.abspath(script_file))
+script_dir += '\\PySide2'
+sys.path.append(script_dir)
 
 import maya.cmds as cmds
 import maya.mel as mel
