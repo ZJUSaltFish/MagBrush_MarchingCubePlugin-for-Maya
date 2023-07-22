@@ -401,6 +401,46 @@ class MarchingCubeNp(object):
         # new mesh generated
         self._new_mesh = om.MFnMesh()
 
+
+    def init_face(self):
+        for i in range(self._size[0] * self._block_size + 1):
+            for k in range(self._size[2] * self._block_size + 1):
+                self._sdf[i][0][k] = 0.0
+
+        
+        for i in range(self._size[0]):
+            for j in range(self._size[1]):
+                for k in range(self._size[2]):
+                    mesh_name = f'mesh_{i}_{j}_{k}'
+                    cube_list = cmds.ls(mesh_name)
+                    if cube_list != []:
+                        for cube in cube_list:
+                            target = cmds.listRelatives(cube, allParents=True)
+                            cmds.delete(target)
+        
+        for i in range(self._size[0]):
+            for k in range(self._size[2]):
+                self.render(i, 0, k)
+
+    def init_sphere(self):
+        self._sdf = np.ones(self._size * self._block_size +1, dtype=np.float32)
+
+        for i in range(self._size[0]):
+            for j in range(self._size[1]):
+                for k in range(self._size[2]):
+                    mesh_name = f'mesh_{i}_{j}_{k}'
+                    cube_list = cmds.ls(mesh_name)
+                    if cube_list != []:
+                        for cube in cube_list:
+                            target = cmds.listRelatives(cube, allParents=True)
+                            cmds.delete(target)
+        
+        for i in range(self._size[0]):
+            for k in range(self._size[2]):
+                self.render(i, 0, k)
+
+        add_point((self._size * self._block_size +1)/2, self._size[0] * self._block_size/2, -1.0)
+
     def add_point(self, point, dist, addition):
         """
         Spherical brush causes point state changes.
