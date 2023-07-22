@@ -1,3 +1,5 @@
+import inspect
+import os
 import sys
 
 # Add pyqt5 to maya python dir
@@ -35,7 +37,7 @@ def loadui(uifile_path):
     uifile.close()
     return uiWindow
 
-class MyWindow():
+class MclGui():
     def __init__(self, parent=None):
         self.ui = loadui(uifile_path)
         self.ui.show()
@@ -138,4 +140,4 @@ class MyWindow():
 
 
 if __name__ == '__main__':
-    myWindow = MyWindow()
+    myWindow = MclGui()
