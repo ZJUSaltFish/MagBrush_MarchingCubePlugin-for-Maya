@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>236</width>
-    <height>390</height>
+    <width>333</width>
+    <height>470</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,20 +22,20 @@
      <rect>
       <x>10</x>
       <y>0</y>
-      <width>221</width>
-      <height>351</height>
+      <width>311</width>
+      <height>421</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="page">
      <property name="geometry">
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>221</width>
-       <height>299</height>
+       <width>311</width>
+       <height>369</height>
       </rect>
      </property>
      <attribute name="label">
@@ -46,7 +46,7 @@
        <rect>
         <x>20</x>
         <y>20</y>
-        <width>81</width>
+        <width>121</width>
         <height>51</height>
        </rect>
       </property>
@@ -57,9 +57,9 @@
      <widget class="QPushButton" name="Drugger">
       <property name="geometry">
        <rect>
-        <x>120</x>
+        <x>180</x>
         <y>20</y>
-        <width>81</width>
+        <width>121</width>
         <height>51</height>
        </rect>
       </property>
@@ -96,11 +96,14 @@
      <widget class="QSlider" name="horizontalSlider_C">
       <property name="geometry">
        <rect>
-        <x>60</x>
-        <y>270</y>
-        <width>160</width>
+        <x>90</x>
+        <y>300</y>
+        <width>211</width>
         <height>16</height>
        </rect>
+      </property>
+      <property name="maximum">
+       <number>100</number>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -109,11 +112,14 @@
      <widget class="QSlider" name="horizontalSlider_A">
       <property name="geometry">
        <rect>
-        <x>60</x>
-        <y>170</y>
-        <width>160</width>
+        <x>90</x>
+        <y>200</y>
+        <width>211</width>
         <height>16</height>
        </rect>
+      </property>
+      <property name="maximum">
+       <number>100</number>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -123,7 +129,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>170</y>
+        <y>200</y>
         <width>54</width>
         <height>12</height>
        </rect>
@@ -136,7 +142,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>270</y>
+        <y>300</y>
         <width>54</width>
         <height>12</height>
        </rect>
@@ -148,11 +154,17 @@
      <widget class="QSlider" name="horizontalSlider_B">
       <property name="geometry">
        <rect>
-        <x>60</x>
-        <y>220</y>
-        <width>160</width>
+        <x>90</x>
+        <y>250</y>
+        <width>211</width>
         <height>16</height>
        </rect>
+      </property>
+      <property name="maximum">
+       <number>100</number>
+      </property>
+      <property name="pageStep">
+       <number>10</number>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -162,7 +174,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>220</y>
+        <y>250</y>
         <width>54</width>
         <height>12</height>
        </rect>
@@ -176,7 +188,7 @@
        <rect>
         <x>20</x>
         <y>100</y>
-        <width>81</width>
+        <width>121</width>
         <height>51</height>
        </rect>
       </property>
@@ -187,9 +199,9 @@
      <widget class="QPushButton" name="CreateSphere">
       <property name="geometry">
        <rect>
-        <x>120</x>
+        <x>180</x>
         <y>100</y>
-        <width>81</width>
+        <width>121</width>
         <height>51</height>
        </rect>
       </property>
@@ -203,72 +215,32 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>221</width>
-       <height>299</height>
+       <width>311</width>
+       <height>369</height>
       </rect>
      </property>
      <attribute name="label">
-      <string>Map Editor</string>
+      <string>Terrain Editor</string>
      </attribute>
-     <widget class="QPushButton" name="CreateCube_2">
+     <widget class="QPushButton" name="ClearAll">
       <property name="geometry">
        <rect>
         <x>0</x>
         <y>270</y>
-        <width>221</width>
-        <height>21</height>
+        <width>301</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
        <string>Clear</string>
       </property>
      </widget>
-     <widget class="QWidget" name="gridLayoutWidget">
+     <widget class="QSlider" name="MapSlider_2">
       <property name="geometry">
        <rect>
-        <x>0</x>
-        <y>130</y>
-        <width>221</width>
-        <height>131</height>
-       </rect>
-      </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QPushButton" name="pushButton">
-         <property name="text">
-          <string>PushButton</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QPushButton" name="pushButton_3">
-         <property name="text">
-          <string>PushButton</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QPushButton" name="pushButton_2">
-         <property name="text">
-          <string>PushButton</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QPushButton" name="pushButton_4">
-         <property name="text">
-          <string>PushButton</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QSlider" name="horizontalSlider_6">
-      <property name="geometry">
-       <rect>
-        <x>60</x>
+        <x>90</x>
         <y>40</y>
-        <width>160</width>
+        <width>211</width>
         <height>16</height>
        </rect>
       </property>
@@ -302,25 +274,31 @@
        <string>Height</string>
       </property>
      </widget>
-     <widget class="QSlider" name="horizontalSlider_7">
+     <widget class="QSlider" name="MapSlider_1">
       <property name="geometry">
        <rect>
-        <x>60</x>
+        <x>90</x>
         <y>10</y>
-        <width>160</width>
+        <width>211</width>
         <height>16</height>
        </rect>
+      </property>
+      <property name="minimum">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <number>10</number>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
      </widget>
-     <widget class="QSlider" name="horizontalSlider_8">
+     <widget class="QSlider" name="MapSlider_4">
       <property name="geometry">
        <rect>
-        <x>60</x>
+        <x>90</x>
         <y>100</y>
-        <width>160</width>
+        <width>211</width>
         <height>16</height>
        </rect>
       </property>
@@ -341,12 +319,12 @@
        <string>BlockSize</string>
       </property>
      </widget>
-     <widget class="QSlider" name="horizontalSlider_9">
+     <widget class="QSlider" name="MapSlider_3">
       <property name="geometry">
        <rect>
-        <x>60</x>
+        <x>90</x>
         <y>70</y>
-        <width>160</width>
+        <width>211</width>
         <height>16</height>
        </rect>
       </property>
@@ -367,6 +345,45 @@
        <string>Width</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="CreateTerrain_B">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>220</y>
+        <width>301</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Terrain2</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_11">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>140</y>
+        <width>161</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>CreateTerrain</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="CreateTerrain_A">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>170</y>
+        <width>301</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Terrain1</string>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>
@@ -375,7 +392,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>236</width>
+     <width>333</width>
      <height>22</height>
     </rect>
    </property>

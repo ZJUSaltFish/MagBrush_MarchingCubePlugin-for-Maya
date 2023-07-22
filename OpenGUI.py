@@ -3,6 +3,7 @@ import maya.cmds as cmd
 import math
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from maya import cmds
+import marching_cube_np
 
 qtVersion = cmds.about(qtVersion=True)
 
@@ -31,10 +32,20 @@ class MyWindow():
         self.ui.CreateCube.clicked.connect(self.C)
         self.ui.CreateSphere.clicked.connect(self.D)
 
+        self.ui.CreateTerrain_A.clicked.connect(self.E)
+        self.ui.CreateTerrain_B.clicked.connect(self.F)
+        self.ui.ClearAll.clicked.connect(self.G)
+
         #slider
         self.ui.horizontalSlider_A.valueChanged.connect(self.sliderA)
         self.ui.horizontalSlider_B.valueChanged.connect(self.sliderB)
         self.ui.horizontalSlider_C.valueChanged.connect(self.sliderC)
+
+        self.ui.MapSlider_1.valueChanged.connect(self.terrainSliderA)
+        self.ui.MapSlider_2.valueChanged.connect(self.terrainSliderB)
+        self.ui.MapSlider_3.valueChanged.connect(self.terrainSliderC)
+        self.ui.MapSlider_4.valueChanged.connect(self.terrainSliderD)
+
         #checkbox
 
 
@@ -76,8 +87,10 @@ class MyWindow():
         self.sliderB
         self.sliderC
 
-
-
+    def E(self):
+        marching_cube_np.init_face()
+    def F(self):
+        marching_cube_np.init_sphere()
 
     def sliderA(self):
         print ("sliderA")
@@ -109,7 +122,21 @@ class MyWindow():
         cmds.setAttr(self.sphere + '.strength', self.Strength)
         cmds.setAttr('%s.ambientColor' % self.mat, self.Strength, self.Strength, self.Strength, type="double3")
 
+    def terrainSliderA(self):
+        self.marching_cube_np._size
+        self._size = self.ui.MapSlider_1.value()
+
+    def terrainSliderB(self):
+        self.marching_cube_np.init_face()
+        self._size[0] = self.ui.MapSlider_2.value()
+
+    def terrainSliderA(self):
+        self.marching_cube_np.init_face()
+        self._size[1] = self.ui.MapSlider_3.value()
+
+    def terrainSliderA(self):
+        self.marching_cube_np.init_face()
+        self._size[2] = self.ui.MapSlider_4.value()
 
 if __name__ == '__main__':
     myWindow = MyWindow()
-
