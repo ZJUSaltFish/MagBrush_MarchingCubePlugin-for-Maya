@@ -1,4 +1,16 @@
 import sys
+
+# Add pyqt5 to maya python dir
+script_file = inspect.getframeinfo(inspect.currentframe()).filename
+script_dir = os.path.dirname(os.path.abspath(script_file))
+script_dir += '\\PyQt5'
+sys.path.append(script_dir)
+# Add PySide2 to maya python dir
+script_file = inspect.getframeinfo(inspect.currentframe()).filename
+script_dir = os.path.dirname(os.path.abspath(script_file))
+script_dir += '\\PySide2'
+sys.path.append(script_dir)
+
 import maya.cmds as cmd
 import math
 from PyQt5.QtWidgets import QApplication, QMainWindow
@@ -11,6 +23,8 @@ from PySide2 import QtGui
 from PySide2 import QtCore
 from PySide2 import QtWidgets
 from PySide2 import QtUiTools
+
+
 
 uifile_path = "D:\GitHubProgram\Mayapy_FinalProject\\UITest1.ui"
 

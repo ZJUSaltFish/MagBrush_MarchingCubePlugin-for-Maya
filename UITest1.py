@@ -86,6 +86,8 @@ class Ui_MainWindow(object):
         self.label_8.setObjectName("label_8")
         self.MapSlider_1 = QtWidgets.QSlider(self.page_2)
         self.MapSlider_1.setGeometry(QtCore.QRect(90, 10, 211, 16))
+        self.MapSlider_1.setMinimum(1)
+        self.MapSlider_1.setMaximum(10)
         self.MapSlider_1.setOrientation(QtCore.Qt.Horizontal)
         self.MapSlider_1.setObjectName("MapSlider_1")
         self.MapSlider_4 = QtWidgets.QSlider(self.page_2)
