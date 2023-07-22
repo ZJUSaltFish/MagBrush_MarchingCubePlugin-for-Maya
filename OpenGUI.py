@@ -30,6 +30,7 @@ class MclGui():
         self.ui = loadui(uifile_path)
         self.ui.show()
 
+    #下面是将UI里控件和代码里的函数连接起来，基础格式是 UI控件.Signal.Function，其中Function就是具体功能
         #button
         self.ui.Painter.clicked.connect(self.A)
         self.ui.Drugger.clicked.connect(self.B)
@@ -52,7 +53,7 @@ class MclGui():
 
         #checkbox
 
-
+    #创建画笔
     def A(self):
         # 创建默认的球体
         self.sphereRadius = 10
@@ -80,10 +81,13 @@ class MclGui():
         cmds.setAttr(self.sphere + ".overrideEnabled", 1)
         cmds.setAttr(self.sphere + ".overrideDisplayType", 2)
         cmds.select(clear=True)
+    #减去画笔
     def B(self):
         print ("B")
+    #方形画笔
     def C(self):
         print ("C")
+    # 方形画笔
     def D(self):
         print ("D")
         self.A
@@ -91,21 +95,26 @@ class MclGui():
         self.sliderB
         self.sliderC
 
+    #创建地形1
     def E(self):
         marching_cube_np.init_face()
+
+    #创建地形2
     def F(self):
         marching_cube_np.init_sphere()
 
+    #画笔大小
     def sliderA(self):
         print ("sliderA")
         self.A
+        #这个是获取进度条的数值
         self.Radius = self.ui.horizontalSlider_A.value()
         # 更新球体的半径
         cmds.setAttr(self.sphere + '.radius', self.Radius)
         scalenow = self.Radius / self.sphereRadius
         cmds.setAttr(self.sphere + '.scale', scalenow, scalenow, scalenow)
 
-
+    #画笔硬度
     def sliderB(self):
         print ("sliderB")
         self.A
@@ -117,7 +126,7 @@ class MclGui():
         else:
             cmds.setAttr('%s.transparency[1].transparency_Position' % self.mat, 0.001)
 
-
+    #画笔强度
     def sliderC(self):
         print ("sliderC")
         self.A
@@ -125,6 +134,22 @@ class MclGui():
         # 更新球体的强度/ambient颜色
         cmds.setAttr(self.sphere + '.strength', self.Strength)
         cmds.setAttr('%s.ambientColor' % self.mat, self.Strength, self.Strength, self.Strength, type="double3")
+
+    #地形区块大小
+    def terrainSliderA(self):
+        print("terrainSliderA")
+
+    #地形长
+    def terrainSliderB(self):
+        print("terrainSliderB")
+
+    #地形宽
+    def terrainSliderC(self):
+        print("terrainSliderC")
+
+    #地形高
+    def terrainSliderD(self):
+        print("terrainSliderD")
 
 
 if __name__ == '__main__':
