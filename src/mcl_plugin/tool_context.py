@@ -121,12 +121,9 @@ class BrushTool():
 
     def set_hardness(self, hardness):
         self._brush_hardness = hardness / 100.0
-        if (self._brush_hardness < 1):
-            cmds.setAttr(
-                '%s.transparency[1].transparency_Position' % self._brush_mat, 1 - self._brush_hardness)
-        else:
-            cmds.setAttr(
-                '%s.transparency[1].transparency_Position' % self._brush_mat, 0.001)
+
+        cmds.setAttr('%s.transparency[1].transparency_Position' % self._brush_mat, 1 - self._brush_hardness * 0.9)
+
 
     def set_strength(self, strength):
         self._brush_strength = strength / 100.0
@@ -152,7 +149,6 @@ class BrushTool():
         # create new brush object
         self._new_brush(self._brush_type)
 
-        cmds.select(cmds.ls(type='mesh'))
         # killing old brush controller thread in case the user clicked twice
         # if self._brush_async is not None:
         #    self._brush_async.cancel()
@@ -346,7 +342,7 @@ class BrushTool():
             cmds.setAttr('%s.transparency[0].transparency_Color' %
                          self._brush_mat, 1.0, 1.0, 1.0, type="double3")
             cmds.setAttr('%s.transparency[1].transparency_Color' %
-                         self._brush_mat, 0.6, 0.6, 0.6, type="double3")
+                         self._brush_mat, 0.54, 0.54, 0.54, type="double3")
             cmds.setAttr(
                 '%s.transparency[1].transparency_Position' % self._brush_mat, 0.001)
             cmds.setAttr(

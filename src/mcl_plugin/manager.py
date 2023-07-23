@@ -8,6 +8,7 @@ import marching_cube_np as mcnp
 import inspect
 import os
 
+import pic
 from PySide2 import QtGui
 from PySide2 import QtCore
 from PySide2 import QtWidgets
@@ -50,7 +51,7 @@ class MclManager(object):
         script_file = inspect.getframeinfo(inspect.currentframe()).filename
         script_dir = os.path.dirname(os.path.abspath(script_file))
         print(script_dir + "\\UITest.ui")
-        self._ui = self._load_gui(script_dir + ".\\UITest1.ui")
+        self.ui = self._load_gui(script_dir + ".\\UITest1.ui")
         # pointer to marching cube instance
         self._mcl = None
         # parameters of creating mcl
@@ -83,11 +84,9 @@ class MclManager(object):
         uifile.close()
         # initialize ui with functions
         # create brush
-        #ui_window.Painter.clicked.connect(self.A)
-        #
-        #ui_window.Drugger.clicked.connect(self.B)
-        #ui_window.CreateCube.clicked.connect(self.C)
-        ui_window.CreateSphere.clicked.connect(self.use_sphere_brush)
+        ui_window.Painter.clicked.connect(self.use_sphere_brush)
+
+        ui_window.Drugger.stateChanged.connect(lambda x:x)
 
         # create box landscape
         ui_window.CreateTerrain_A.clicked.connect(self.create_plane_mcl)
@@ -97,15 +96,24 @@ class MclManager(object):
         ui_window.ClearAll.clicked.connect(self.delete_mcl)
 
         # radius, hardness, strength of brush
-        ui_window.horizontalSlider_A.valueChanged.connect(self.brush_tool.set_radius)
-        ui_window.horizontalSlider_B.valueChanged.connect(self.brush_tool.set_hardness)
-        ui_window.horizontalSlider_C.valueChanged.connect(self.brush_tool.set_strength)
+        ui_window.horizontalSlider_A.valueChanged.connect(lambda x: (self.brush_tool.set_radius(x), self.ui.spinBox_5.setValue(x)))
+        ui_window.horizontalSlider_B.valueChanged.connect(lambda x: (self.brush_tool.set_hardness(x), self.ui.spinBox_6.setValue(x)))
+        ui_window.horizontalSlider_C.valueChanged.connect(lambda x: (self.brush_tool.set_strength(x), self.ui.spinBox_7.setValue(x)))
 
         # block size, x size, y size, z size of terrain
-        ui_window.MapSlider_1.valueChanged.connect(self.set_mcl_x)
-        ui_window.MapSlider_2.valueChanged.connect(self.set_mcl_y)
-        ui_window.MapSlider_3.valueChanged.connect(self.set_mcl_z)
-        ui_window.MapSlider_4.valueChanged.connect(self.set_mcl_block)
+        ui_window.MapSlider_1.valueChanged.connect(lambda x: (self.set_mcl_x(x), self.ui.spinBox_1.setValue(x)))
+        ui_window.MapSlider_2.valueChanged.connect(lambda y: (self.set_mcl_y(y), self.ui.spinBox_2.setValue(y)))
+        ui_window.MapSlider_3.valueChanged.connect(lambda z: (self.set_mcl_x(z), self.ui.spinBox_3.setValue(z)))
+        ui_window.MapSlider_4.valueChanged.connect(lambda b: (self.set_mcl_block(b), self.ui.spinBox_4.setValue(b)))
+
+        # spin box
+        ui_window.spinBox_1.valueChanged.connect(lambda: self.ui.MapSlider_1.setValue(self.ui.spinBox_1.value()))
+        ui_window.spinBox_2.valueChanged.connect(lambda: self.ui.MapSlider_2.setValue(self.ui.spinBox_2.value()))
+        ui_window.spinBox_3.valueChanged.connect(lambda: self.ui.MapSlider_3.setValue(self.ui.spinBox_3.value()))
+        ui_window.spinBox_4.valueChanged.connect(lambda: self.ui.MapSlider_4.setValue(self.ui.spinBox_4.value()))
+        ui_window.spinBox_5.valueChanged.connect(lambda: self.ui.horizontalSlider_A.setValue(self.ui.spinBox_5.value()))
+        ui_window.spinBox_6.valueChanged.connect(lambda: self.ui.horizontalSlider_B.setValue(self.ui.spinBox_6.value()))
+        ui_window.spinBox_7.valueChanged.connect(lambda: self.ui.horizontalSlider_C.setValue(self.ui.spinBox_7.value()))
 
         # set initial value
         ui_window.horizontalSlider_A.setValue(10)
@@ -193,46 +201,34 @@ class MclManager(object):
         """
         self._mcl_block_size = b
 
-    def show_gui(self):
-        """
-        This function shows a gui as interface between user and this manager
-        The GUI can be closed and reopened
-        :return: None
-        """
-        WINDOW_NAME = 'CC_Tool'
-        WINDOW_TITLE = 'CC_Tool1.0'
-
-        try:
-            cmds.deleteUI(WINDOW_NAME)
-        except:
-            pass
-
-        cmds.window(WINDOW_NAME, title=WINDOW_TITLE)
-        cmds.columnLayout(adj=True)
-
-        # Radius Slider
-        cmds.separator(height=10, style='none')
-        cmds.text(label='Radius')
-        cmds.floatSliderGrp(min=1, max=10, value=1, field=True,
-                            dragCommand=lambda x: self.brush_tool.set_radius(x))
-        # Strength Slider
-        cmds.separator(height=10, style='none')
-        cmds.text(label='Strength')
-        cmds.floatSliderGrp(min=0.0, max=1.0, value=1, field=True,
-                            dragCommand=lambda x: self.brush_tool.set_strength(x))
-        # Hardness Slider
-        cmds.separator(height=10, style='none')
-        cmds.text(label='Hardness')
-        cmds.floatSliderGrp(min=0.0, max=1.0, value=1, field=True,
-                            dragCommand=lambda x: self.brush_tool.set_hardness(x))
-
-        explain_Tool = "Start landscape editing tool"
-        cmds.button(l='Tool', ann=explain_Tool, h=60, w=20, c=self.start_tool)
-
-        cmds.showWindow(WINDOW_NAME)
-
     def show_ui(self):
-        self._ui.show()
+        self.ui.show()
+
+    def spinbox_1(self):
+        print("terrainSlider1")
+
+    #地形长spinbox
+    def spinbox_2(self):
+        print("terrainSlider2")
+
+    #地形宽spinbox
+    def spinbox_3(self):
+        print("terrainSlider3")
+
+    #地形高spinbox
+    def spinbox_4(self):
+        print("terrainSlider4")
+
+    #画笔大小spinbox
+    def spinbox_5(self):
+        self.ui.horizontalSlider_A.setValue(self.ui.spinBox_5.value())
+
+    def spinbox_6(self):
+        self.ui.horizontalSlider_B.setValue(self.ui.spinBox_6.value())
+
+    def spinbox_7(self):
+        self.ui.horizontalSlider_C.setValue(self.ui.spinBox_7.value())
+
     def add_to_shelf(self):
         """
         This function creates a new tool on the tool shelf.
