@@ -107,6 +107,11 @@ class MclManager(object):
         ui_window.MapSlider_3.valueChanged.connect(self.set_mcl_z)
         ui_window.MapSlider_4.valueChanged.connect(self.set_mcl_block)
 
+        # set initial value
+        ui_window.horizontalSlider_A.setValue(10)
+        ui_window.horizontalSlider_B.setValue(50)
+        ui_window.horizontalSlider_C.setValue(100)
+
         return ui_window
 
     def create_sphere_mcl(self):

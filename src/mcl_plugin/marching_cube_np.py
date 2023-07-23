@@ -380,10 +380,6 @@ class MarchingCubeNp(object):
         # offset of sdf field in (x,y,z).
         self._offset = np.array([0,0,0])
 
-        # 创建底部平台
-        # Create a bottom platform.
-        cmds.polyCreateFacet(p=[(0.5, 0.5, 0.5), (0.5, 0.5, 40.5), (40.5, 0.5, 40.5), (40.5, 0.5, 0.5)])
-
         # Initialize the SDF sample field.
         self._sdf = np.ones(self._size * self._block_size +1, dtype=np.float32)
         """
@@ -402,6 +398,7 @@ class MarchingCubeNp(object):
         self._new_mesh = om.MFnMesh()
 
     def __del__(self):
+        cmds.delete(cmds.select(all=True))
         pass
 
     def init_face(self):
@@ -441,9 +438,10 @@ class MarchingCubeNp(object):
             for k in range(self._size[2]):
                 self.render(i, 0, k)
 
-        self.add_point((self._size * self._block_size +1)/2, self._size[0] * self._block_size/2, -1.0)
+        origin = om.MPoint((self._size * self._block_size +1)/2)
+        self.add_point(origin, self._size[0] * self._block_size/2, -1.0, 1.0)
 
-    def add_point(self, point, dist, addition):
+    def add_point(self, point, dist, addition, hardness):
         """
         Spherical brush causes point state changes.
         point: the point that brush draws at
@@ -475,24 +473,21 @@ class MarchingCubeNp(object):
                         #changed_blocks[block_index] = True
                         value = self._sdf[int(other_point[0])][int(other_point[1])][int(other_point[2])]
                         value += addition
-
-                        print(value)
                         self._sdf[int(other_point[0])][int(other_point[1])][int(other_point[2])] = max(0, min(2, value))
 
-
         # find the block intersect with brush
-        for i in range(self._size[0]):
-            for j in range(self._size[1]):
-                for k in range(self._size[2]):
-                    for vert_index in self._ADJACENT_SEQUENCE:
-                        vert_pos = om.MPoint(
-                            (i * self._block_size + vert_index[0]) * self._interval + self._offset[0],
-                            (j * self._block_size + vert_index[1]) * self._interval + self._offset[1],
-                            (k * self._block_size + vert_index[2]) * self._interval + self._offset[2]
-                        )
-                        if vert_pos.distanceTo(point) < dist:
-                            changed_blocks.append((i,j,k))
-                            break
+        for i in range(min_x // self._block_size, (max_x+1) // self._block_size + 1):
+            for j in range(min_y // self._block_size, (max_y+1) // self._block_size + 1):
+                for k in range(min_z // self._block_size, (max_z+1) // self._block_size + 1):
+                    # separate axis
+                    if (
+                        max_x * self._interval < i * self._block_size or min_x * self._interval > (i+1) * self._block_size or
+                        max_y * self._interval < j * self._block_size or min_y * self._interval > (j+1) * self._block_size or
+                        max_z * self._interval < k * self._block_size or min_z * self._interval > (k+1) * self._block_size
+                    ):
+                        continue
+                    changed_blocks.append((i,j,k))
+                    break
 
         # 重建被改变的区块
         # Reconstructing the altered blocks.

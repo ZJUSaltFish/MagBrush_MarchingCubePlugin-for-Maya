@@ -29,6 +29,10 @@ class BrushModes(Enum):
     smooth = 2
 
 
+class BrushModeColors():
+    add = (0.343, 0.684, 0.306)
+    subtract = (0.951, 0.311, 0.215)
+
 class BrushTool():
     CONTEXT_NAME = "BrushContext"
 
@@ -48,7 +52,7 @@ class BrushTool():
         self._brush_type = BrushTypes.sphere
         # basic properties of the brush
         self._brush_radius = 1.0
-        self._brush_strength = 1.0
+        self._brush_strength = 0.5
         self._brush_hardness = 1.0
         # brush mode, add, subtract, smooth, etc
         self._brush_mode = BrushModes.add
@@ -101,7 +105,7 @@ class BrushTool():
         return self._brush_mode
 
     def set_radius(self, radius):
-        self._brush_radius = radius
+        self._brush_radius = radius / 10.0
         if self._brush_type == BrushTypes.sphere:
             # Find the node that builds the sphere brush
             build_node = None
@@ -113,21 +117,31 @@ class BrushTool():
                         build_node = node
                         break
 
-                cmds.setAttr(build_node + '.radius', radius)
+                cmds.setAttr(build_node + '.radius', self._brush_radius)
 
     def set_hardness(self, hardness):
-        self._brush_hardness = hardness
-        if (hardness < 1):
+        self._brush_hardness = hardness / 100.0
+        if (self._brush_hardness < 1):
             cmds.setAttr(
-                '%s.transparency[1].transparency_Position' % self._brush_mat, 1 - hardness)
+                '%s.transparency[1].transparency_Position' % self._brush_mat, 1 - self._brush_hardness)
         else:
             cmds.setAttr(
                 '%s.transparency[1].transparency_Position' % self._brush_mat, 0.001)
 
     def set_strength(self, strength):
-        self._brush_strength = strength
-        cmds.setAttr('%s.ambientColor' % self._brush_mat,
-                     strength, strength, strength, type="double3")
+        self._brush_strength = strength / 100.0
+        if self._brush_mode == BrushModes.add:
+            cmds.setAttr('%s.ambientColor' % self._brush_mat,
+                         self._brush_strength * BrushModeColors.add[0],
+                         self._brush_strength * BrushModeColors.add[1],
+                         self._brush_strength * BrushModeColors.add[2],
+                         type="double3")
+        else:
+            cmds.setAttr('%s.ambientColor' % self._brush_mat,
+                         self._brush_strength * BrushModeColors.subtract[0],
+                         self._brush_strength * BrushModeColors.subtract[1],
+                         self._brush_strength * BrushModeColors.subtract[2],
+                         type="double3")
 
     def _switch_on(self):
         """
@@ -137,10 +151,6 @@ class BrushTool():
         """
         # create new brush object
         self._new_brush(self._brush_type)
-
-        self.set_radius(self._brush_radius)
-        self.set_strength(self._brush_strength)
-        self.set_hardness(self._brush_hardness)
 
         cmds.select(cmds.ls(type='mesh'))
         # killing old brush controller thread in case the user clicked twice
@@ -188,10 +198,10 @@ class BrushTool():
             (x, y, z, t) = location
             if self._brush_mode == BrushModes.subtract:
                 # press shift to subtract
-                self._mcl.addPoint(om.MPoint(x, y, z),
+                self._mcl.add_point(om.MPoint(x, y, z),
                                  self._brush_radius, self._brush_strength, self._brush_hardness)
             else:
-                self._mcl.addPoint(om.MPoint(x, y, z),
+                self._mcl.add_point(om.MPoint(x, y, z),
                                  self._brush_radius, -self._brush_strength, self._brush_hardness)
             # self._mcl.render()
 
@@ -313,21 +323,28 @@ class BrushTool():
             pass
         else:
             # 创建默认的球体
-            sphereRadius = 10
-            sphereStrength = 0.5
-            sphereHardness = 1.0
-            cmds.sphere(name=self._BRUSH_NAME, radius=sphereRadius/10)
+            cmds.sphere(name=self._BRUSH_NAME, radius=self._brush_radius)
             # 将材质赋给球体,并使其不可选中
             cmds.select(self._BRUSH_NAME)
             cmds.sets(forceElement='%sSG' % self._brush_mat)
             # 设置球体的默认ambient颜色值
-            cmds.setAttr('%s.ambientColor' % self._brush_mat, sphereStrength,
-                         sphereStrength, sphereStrength, type="double3")
+            if self._brush_mode == BrushModes.subtract:
+                cmds.setAttr('%s.ambientColor' % self._brush_mat,
+                             self._brush_strength * BrushModeColors.subtract[0],
+                             self._brush_strength * BrushModeColors.subtract[1],
+                             self._brush_strength * BrushModeColors.subtract[2],
+                             type="double3")
+            else:
+                cmds.setAttr('%s.ambientColor' % self._brush_mat,
+                             self._brush_strength * BrushModeColors.add[0],
+                             self._brush_strength * BrushModeColors.add[1],
+                             self._brush_strength * BrushModeColors.add[2],
+                             type="double3")
             # 设置球体的默认渐变值
             cmds.setAttr('%s.transparency[0].transparency_Color' %
                          self._brush_mat, 1.0, 1.0, 1.0, type="double3")
             cmds.setAttr('%s.transparency[1].transparency_Color' %
-                         self._brush_mat, 0, 0, 0, type="double3")
+                         self._brush_mat, 0.6, 0.6, 0.6, type="double3")
             cmds.setAttr(
                 '%s.transparency[1].transparency_Position' % self._brush_mat, 0.001)
             cmds.setAttr(
@@ -348,4 +365,6 @@ class BrushTool():
         cmds.sets(name='%sSG' % mat, renderable=True,
                   noSurfaceShader=True, empty=True)
         cmds.connectAttr('%s.outColor' % mat, '%sSG.surfaceShader' % mat)
+        # set no lighting
+        cmds.setAttr('%s.specularity' % mat, 0)
         return mat
