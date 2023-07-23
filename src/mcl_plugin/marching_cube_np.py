@@ -481,11 +481,16 @@ class MarchingCubeNp(object):
                     # pos = index * internal + offset
                     other_point = om.MPoint(i * self._interval + self._offset[0], j * self._interval + self._offset[1], k * self._interval + self._offset[2])
                     if other_point.distanceTo(point) < dist:
+                        
+                        if(dist * hardness / 100 > other_point.distanceTo(point)):
+                            tmp_addition = addition
+                        else:
+                            tmp_addition = addition * (1 - (other_point.distanceTo(point) - dist * hardness / 100) / (dist * (100 - hardness) / 100))
                         # when this sample point is in brush
                         #block_index = (i // self._block_size, j // self._block_size, k // self._block_size)
                         #changed_blocks[block_index] = True
                         value = self._sdf[i][j][k]
-                        value += addition
+                        value += tmp_addition
                         self._sdf[i][j][k] = max(0, min(2, value))
 
         # find the block intersect with brush
