@@ -149,6 +149,7 @@ class BrushTool():
         # create new brush object
         self._new_brush(self._brush_type)
 
+        # cmds.select(cmds.ls(type='mesh'))
         # killing old brush controller thread in case the user clicked twice
         # if self._brush_async is not None:
         #    self._brush_async.cancel()

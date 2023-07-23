@@ -379,7 +379,7 @@ class MarchingCubeNp(object):
         self._interval = 1
 
         # offset of sdf field in (x,y,z).
-        self._offset = np.array([0,0,0])
+        self._offset = np.array([(- self._size[0] * self._block_size / 2  - 0.5) * self._interval, - 0.5 * self._interval, (- self._size[2] * self._block_size / 2  - 0.5) * self._interval])
 
         # Initialize the SDF sample field.
         self._sdf = np.ones(self._size * self._block_size +1, dtype=np.float32)
@@ -441,7 +441,7 @@ class MarchingCubeNp(object):
             for k in range(self._size[2]):
                 self.render(i, 0, k)
 
-        origin = om.MPoint((self._size * self._block_size +1)/2)
+        origin = om.MPoint((self._size * self._block_size +1)/2  + self._offset)
         self.add_point(origin, self._size[0] * self._block_size/2, -1.0, 1.0)
 
     last_time = 0
@@ -484,9 +484,9 @@ class MarchingCubeNp(object):
                         # when this sample point is in brush
                         #block_index = (i // self._block_size, j // self._block_size, k // self._block_size)
                         #changed_blocks[block_index] = True
-                        value = self._sdf[int(other_point[0])][int(other_point[1])][int(other_point[2])]
+                        value = self._sdf[i][j][k]
                         value += addition
-                        self._sdf[int(other_point[0])][int(other_point[1])][int(other_point[2])] = max(0, min(2, value))
+                        self._sdf[i][j][k] = max(0, min(2, value))
 
         # find the block intersect with brush
         for i in range(min_x // self._block_size, max_x// self._block_size + 1):
@@ -518,19 +518,19 @@ class MarchingCubeNp(object):
         """
         Calculate the correct positions of the faces and
         store the results in the generated Mesh's vertex list, edge list, and face list.
-        :param vertices:
-        :param size:
-        :param p_x:
-        :param p_y:
-        :param p_z:
-        :return:
+        :param vertices: generate the coordinates of each point on the face
+        :param size: mgnification factor
+        :param p_x: relative x coordinate
+        :param p_y: relative y coordinate
+        :param p_z: relative z coordinate
+        :return: none
         """
         self._face_list.append(len(vertices))
         for i in range(len(vertices)):
             (x, y, z) = vertices[len(vertices) - i - 1]
-            x = (x - 1) * size * 0.5 + 1 + p_x * size
-            y = (y - 1) * size * 0.5 + 1 + p_y * size
-            z = (z - 1) * size * 0.5 + 1 + p_z * size
+            x = (x - 1) * size * 0.5 + 1 + p_x * size + self._offset[0]
+            y = (y - 1) * size * 0.5 + 1 + p_y * size + self._offset[1]
+            z = (z - 1) * size * 0.5 + 1 + p_z * size + self._offset[2]
             point = om.MPoint(x,y,z)
             if point in self._point_list:
                 self._num_list.append(self._point_list.index(point))
@@ -541,9 +541,9 @@ class MarchingCubeNp(object):
     def render(self, p_x, p_y, p_z):
         """
         Generate a specific block.
-        :param p_x:
-        :param p_y:
-        :param p_z:
+        :param p_x: relative x coordinate
+        :param p_y: relative y coordinate
+        :param p_z: relative z coordinate
         :return: None
         """
 
@@ -564,7 +564,7 @@ class MarchingCubeNp(object):
                         if self._sdf[i + adj[0]][j + adj[1]][k + adj[2]] >= 1:
                             type += self._MUL[t]
                     if (type != 255):
-                        self.makeCube(type, 1, i, j, k, [i == 0, i == self._size[0]*self._block_size - 1, 0, j == self._size[1]*self._block_size - 1, k == 0,
+                        self.makeCube(type, 1, i, j, k, [i == 0, i == self._size[0]*self._block_size - 1, j == 0, j == self._size[1]*self._block_size - 1, k == 0,
                                                          k == self._size[2]*self._block_size - 1])
 
         # Generate mesh and add materials.
@@ -587,13 +587,13 @@ class MarchingCubeNp(object):
     def makeCube(self, type, size, p_x, p_y, p_z, show):
         """
         This function generates a single cell(cube)
-        :param type:
-        :param size:
-        :param p_x:
-        :param p_y:
-        :param p_z:
-        :param show:
-        :return:
+        :param type: rank of combinations
+        :param size: mgnification factor
+        :param p_x: relative x coordinate
+        :param p_y: relative y coordinate
+        :param p_z: relative z coordinate
+        :param show: display status of each face
+        :return: none
         """
         # 生成非六面上的面
         # Generating faces not on hexahedral sides.
