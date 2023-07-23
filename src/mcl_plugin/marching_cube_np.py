@@ -9,6 +9,7 @@ import maya.api.OpenMaya as om
 import random as rd
 import numpy as np
 import math
+import time
 
 class MarchingCubeNp(object):
     # 255种情况中与等势面相交的边
@@ -443,6 +444,8 @@ class MarchingCubeNp(object):
         origin = om.MPoint((self._size * self._block_size +1)/2)
         self.add_point(origin, self._size[0] * self._block_size/2, -1.0, 1.0)
 
+    last_time = 0
+
     def add_point(self, point, dist, addition, hardness):
         """
         Spherical brush causes point state changes.
@@ -451,6 +454,14 @@ class MarchingCubeNp(object):
         addition: the strength of brush. e.g. strength = 1 -> add all sdf sample value by 1
         :return: None
         """
+
+        now_time = time.time()
+
+        if (now_time-self.last_time > 0.100 * (dist ** 0.5)):
+            self.last_time = now_time
+        else:
+            return
+
         # The initialized blocks that have been altered.
         #changed_cube = np.zeros(self._size, dtype=np.bool_)
         changed_blocks = []
