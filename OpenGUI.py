@@ -18,7 +18,7 @@ from PySide2 import QtUiTools
 
 
 
-uifile_path = "D:\GitHubProgram\Mayapy_FinalProject\\UITest1.ui"
+uifile_path = "/src/mcl_plugin/UITest1.ui"
 
 def loadui(uifile_path):
     uifile = QtCore.QFile(uifile_path)
@@ -147,7 +147,7 @@ class MclGui():
         self.A
         #这个是获取进度条的数值
         self.Radius = self.ui.horizontalSlider_A.value()
-        self.ui.spinBox_5.setValue(self.ui.horizontalSlider_A.value())
+        #self.ui.spinBox_5.setValue(self.ui.horizontalSlider_A.value())
         # 更新球体的半径
         cmds.setAttr(self.sphere + '.radius', self.Radius)
         scalenow = self.Radius / self.sphereRadius
@@ -217,6 +217,7 @@ class MclGui():
     def spinbox_5(self):
         self.sliderA
         self.ui.horizontalSlider_A.setValue(self.ui.spinBox_5.value())
+        self.ui.spinBox_5.setValue(self.ui.horizontalSlider_A.value())
 
     def spinbox_6(self):
         self.sliderB

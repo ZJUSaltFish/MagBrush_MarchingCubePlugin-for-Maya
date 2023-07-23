@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>930</height>
+    <height>960</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap resource="src/mcl_plugin/pic/pic.qrc">:/封面图/Cover.png</pixmap>
+     <pixmap resource="pic.qrc">:/封面图/pic/Cover.png</pixmap>
     </property>
     <property name="scaledContents">
      <bool>true</bool>
@@ -58,9 +58,9 @@
    <widget class="QPushButton" name="CreateTerrain_A">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>290</y>
-      <width>250</width>
+      <x>40</x>
+      <y>510</y>
+      <width>521</width>
       <height>30</height>
      </rect>
     </property>
@@ -79,9 +79,9 @@
    <widget class="QPushButton" name="CreateTerrain_B">
     <property name="geometry">
      <rect>
-      <x>320</x>
-      <y>290</y>
-      <width>250</width>
+      <x>40</x>
+      <y>560</y>
+      <width>521</width>
       <height>30</height>
      </rect>
     </property>
@@ -101,7 +101,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>560</y>
+      <y>600</y>
       <width>241</width>
       <height>21</height>
      </rect>
@@ -123,7 +123,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>330</y>
+      <y>290</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -145,7 +145,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>390</y>
+      <y>350</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -167,7 +167,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>330</y>
+      <y>290</y>
       <width>51</width>
       <height>22</height>
      </rect>
@@ -189,7 +189,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>390</y>
+      <y>350</y>
       <width>51</width>
       <height>22</height>
      </rect>
@@ -208,7 +208,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>450</y>
+      <y>410</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -230,7 +230,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>510</y>
+      <y>470</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -252,7 +252,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>450</y>
+      <y>410</y>
       <width>51</width>
       <height>22</height>
      </rect>
@@ -271,7 +271,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>510</y>
+      <y>470</y>
       <width>51</width>
       <height>22</height>
      </rect>
@@ -290,7 +290,7 @@
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>330</y>
+      <y>290</y>
       <width>411</width>
       <height>21</height>
      </rect>
@@ -318,7 +318,7 @@
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>390</y>
+      <y>350</y>
       <width>411</width>
       <height>21</height>
      </rect>
@@ -340,7 +340,7 @@
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>450</y>
+      <y>410</y>
       <width>411</width>
       <height>21</height>
      </rect>
@@ -362,7 +362,7 @@
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>510</y>
+      <y>470</y>
       <width>411</width>
       <height>21</height>
      </rect>
@@ -384,7 +384,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>590</y>
+      <y>630</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -406,7 +406,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>650</y>
+      <y>690</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -428,7 +428,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>710</y>
+      <y>750</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -450,7 +450,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>590</y>
+      <y>630</y>
       <width>51</width>
       <height>22</height>
      </rect>
@@ -469,7 +469,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>650</y>
+      <y>690</y>
       <width>51</width>
       <height>22</height>
      </rect>
@@ -485,7 +485,7 @@
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>710</y>
+      <y>750</y>
       <width>51</width>
       <height>22</height>
      </rect>
@@ -501,7 +501,7 @@
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>590</y>
+      <y>630</y>
       <width>411</width>
       <height>21</height>
      </rect>
@@ -523,7 +523,7 @@
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>650</y>
+      <y>690</y>
       <width>411</width>
       <height>21</height>
      </rect>
@@ -542,7 +542,7 @@
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>710</y>
+      <y>750</y>
       <width>411</width>
       <height>21</height>
      </rect>
@@ -561,7 +561,7 @@
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>770</y>
+      <y>810</y>
       <width>521</width>
       <height>30</height>
      </rect>
@@ -580,7 +580,7 @@
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>820</y>
+      <y>860</y>
       <width>521</width>
       <height>31</height>
      </rect>
@@ -596,7 +596,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normalon>:/按钮背景/Clear_bk.png</normalon>
+      <normalon>:/按钮背景/pic/Clear_bk.png</normalon>
      </iconset>
     </property>
     <property name="iconSize">
@@ -610,7 +610,7 @@
     <property name="geometry">
      <rect>
       <x>460</x>
-      <y>560</y>
+      <y>600</y>
       <width>111</width>
       <height>21</height>
      </rect>
@@ -641,7 +641,7 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources>
-  <include location="src/mcl_plugin/pic/pic.qrc"/>
+  <include location="pic.qrc"/>
  </resources>
  <connections/>
 </ui>

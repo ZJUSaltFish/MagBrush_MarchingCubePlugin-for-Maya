@@ -1,8 +1,8 @@
 <RCC>
   <qresource prefix="封面图">
-    <file>Cover.png</file>
+    <file>pic/Cover.png</file>
   </qresource>
   <qresource prefix="按钮背景">
-    <file>Clear_bk.png</file>
+    <file>pic/Clear_bk.png</file>
   </qresource>
 </RCC>
