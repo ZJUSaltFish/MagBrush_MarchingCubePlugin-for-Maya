@@ -399,8 +399,8 @@ class MarchingCubeNp(object):
         self._new_mesh = om.MFnMesh()
 
     def __del__(self):
+        self._sdf = np.ones(self._size * self._block_size +1, dtype=np.float32)
         cmds.delete(cmds.ls("block*"))
-        pass
 
     def init_face(self):
         for i in range(self._size[0] * self._block_size + 1):
