@@ -474,11 +474,11 @@ class MarchingCubeNp(object):
         # for all points in the bounding box of brush: (the larger internal, the less points)
         # min index = (point - offset - dist)/internal, max index = (point - offset + dist)/internal
         min_x = max(int((point[0] - self._offset[0] - dist) / self._interval), 0)
-        max_x = min(int((point[0] - self._offset[0] + dist) / self._interval) + 1, self._size[0] * self._block_size -1)
+        max_x = min(int((point[0] - self._offset[0] + dist) / self._interval) + 1, self._size[0] * self._block_size)
         min_y = max(int((point[1] - self._offset[1] - dist) / self._interval), 0)
-        max_y = min(int((point[1] - self._offset[1] + dist) / self._interval) + 1, self._size[1] * self._block_size -1)
+        max_y = min(int((point[1] - self._offset[1] + dist) / self._interval) + 1, self._size[1] * self._block_size)
         min_z = max(int((point[2] - self._offset[2] - dist) / self._interval), 0)
-        max_z = min(int((point[2] - self._offset[2] + dist) / self._interval) + 1, self._size[0] * self._block_size -1)
+        max_z = min(int((point[2] - self._offset[2] + dist) / self._interval) + 1, self._size[0] * self._block_size)
         for i in range(min_x, max_x + 1):
             for j in range(min_y, max_y + 1):
                 for k in range(min_z, max_z + 1):
@@ -498,9 +498,9 @@ class MarchingCubeNp(object):
                         self._sdf[i][j][k] = max(-1, min(1, value))
 
         # find the block intersect with brush
-        for i in range(min_x // self._block_size, max_x// self._block_size + 1):
-            for j in range(min_y // self._block_size, max_y // self._block_size + 1):
-                for k in range(min_z // self._block_size, max_z // self._block_size + 1):
+        for i in range(min_x // self._block_size, (max_x-1)// self._block_size + 1):
+            for j in range(min_y // self._block_size, (max_y-1) // self._block_size + 1):
+                for k in range(min_z // self._block_size, (max_z-1) // self._block_size + 1):
                     # separate axis
                     if (
                             max_x < i * self._block_size or min_x > (i+1) * self._block_size or
