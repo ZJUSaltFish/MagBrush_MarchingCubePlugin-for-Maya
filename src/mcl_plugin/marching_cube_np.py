@@ -446,7 +446,7 @@ class MarchingCubeNp(object):
                 self.render(i, 0, k)
 
         origin = om.MPoint((self._size * self._block_size +1)/2  + self._offset)
-        self.add_point(origin, self._size[0] * self._block_size/2, -1.0, 1.0)
+        self.add_point(origin, self._size[0] * self._block_size/2, -2.0, 50.0)
 
     last_time = 0
 
