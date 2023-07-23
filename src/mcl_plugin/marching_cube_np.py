@@ -483,13 +483,12 @@ class MarchingCubeNp(object):
                 for k in range(min_z // self._block_size, max_z // self._block_size + 1):
                     # separate axis
                     if (
-                            (max_x+1) < i * self._block_size or (min_x-1) > (i+1) * self._block_size or
-                            (max_y+1) < j * self._block_size or (min_y-1) > (j+1) * self._block_size or
-                            (max_z+1) < k * self._block_size or (min_z-1) > (k+1) * self._block_size
+                            max_x < i * self._block_size or min_x > (i+1) * self._block_size or
+                            max_y < j * self._block_size or min_y > (j+1) * self._block_size or
+                            max_z < k * self._block_size or min_z > (k+1) * self._block_size
                         ):
                         continue
                     changed_blocks.append((i,j,k))
-                    break
 
         # 重建被改变的区块
         # Reconstructing the altered blocks.
