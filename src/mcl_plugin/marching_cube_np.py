@@ -421,6 +421,8 @@ class MarchingCubeNp(object):
             for k in range(self._size[2]):
                 self.render(i, 0, k)
 
+        cmds.select([])
+
     def init_sphere(self):
         self._sdf = np.ones(self._size * self._block_size +1, dtype=np.float32)
 
@@ -476,15 +478,15 @@ class MarchingCubeNp(object):
                         self._sdf[int(other_point[0])][int(other_point[1])][int(other_point[2])] = max(0, min(2, value))
 
         # find the block intersect with brush
-        for i in range(min_x // self._block_size, (max_x+1) // self._block_size + 1):
-            for j in range(min_y // self._block_size, (max_y+1) // self._block_size + 1):
-                for k in range(min_z // self._block_size, (max_z+1) // self._block_size + 1):
+        for i in range(min_x // self._block_size, max_x// self._block_size + 1):
+            for j in range(min_y // self._block_size, max_y // self._block_size + 1):
+                for k in range(min_z // self._block_size, max_z // self._block_size + 1):
                     # separate axis
                     if (
-                        max_x * self._interval < i * self._block_size or min_x * self._interval > (i+1) * self._block_size or
-                        max_y * self._interval < j * self._block_size or min_y * self._interval > (j+1) * self._block_size or
-                        max_z * self._interval < k * self._block_size or min_z * self._interval > (k+1) * self._block_size
-                    ):
+                            (max_x+1) < i * self._block_size or (min_x-1) > (i+1) * self._block_size or
+                            (max_y+1) < j * self._block_size or (min_y-1) > (j+1) * self._block_size or
+                            (max_z+1) < k * self._block_size or (min_z-1) > (k+1) * self._block_size
+                        ):
                         continue
                     changed_blocks.append((i,j,k))
                     break
@@ -499,6 +501,8 @@ class MarchingCubeNp(object):
                     target = cmds.listRelatives(cube, allParents=True)
                     cmds.delete(target)
             self.render(block_index[0], block_index[1], block_index[2])
+
+        cmds.select([])
 
     def showmesh(self, vertices, size, p_x, p_y, p_z):
         """
@@ -545,8 +549,9 @@ class MarchingCubeNp(object):
             for j in range(p_y * self._block_size, (p_y+1) * self._block_size):
                 for k in range(p_z * self._block_size, (p_z+1) * self._block_size):
                     type = 0
-                    for t in range(8):
-                        if self._sdf[i + t // 4][j + (t % 4) // 2][k + t % 2] >= 1:
+                    # for t in range(8):
+                    for t, adj in enumerate(self._ADJACENT_SEQUENCE):
+                        if self._sdf[i + adj[0]][j + adj[1]][k + adj[2]] >= 1:
                             type += self._MUL[t]
                     if (type != 255):
                         self.makeCube(type, 1, i, j, k, [i == 0, i == self._size[0]*self._block_size - 1, 0, j == self._size[1]*self._block_size - 1, k == 0,

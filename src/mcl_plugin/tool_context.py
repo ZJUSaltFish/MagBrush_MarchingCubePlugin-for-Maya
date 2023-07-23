@@ -218,9 +218,11 @@ class BrushTool():
         omui.M3dView().active3dView().viewToWorld(
             int(viewport_pos[0]), int(viewport_pos[1]), ray_source, ray_direction)
 
-        selection_list = om.MGlobal.getActiveSelectionList()
-
-        intersect_point = om.MFloatPoint()
+        #selection_list = om.MGlobal.getActiveSelectionList()
+        selection_list = om.MSelectionList()
+        tmp_list = cmds.ls("block*")
+        for selected in tmp_list:
+            selection_list.add(selected)
 
         hit = False
         selec_iter = om.MItSelectionList(selection_list)
