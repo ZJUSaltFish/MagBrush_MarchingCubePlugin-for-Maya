@@ -724,16 +724,16 @@ class MarchingCubeNp(object):
         cmds.connectAttr(sampler + '.normalCamera', eye_to_world + '.input1')# the normal in camera space to be transformed
 
 
-        # the node remapping 0.5~0.6 to 0~1 (default out is 0~1)
+        # This node remaps normalY (-1,1) to (0,1), and determine cliff or ground.
         remap = cmds.shadingNode('remapValue', asUtility = True)
         cmds.setAttr(remap + '.inputMax', 1)
         cmds.setAttr(remap + '.inputMin', -1)
-        cmds.setAttr(remap + '.value[0].vlp', 0.6)
-        cmds.setAttr(remap + '.value[0].vlfv', 0.0)
-        cmds.setAttr(remap + '.value[0].vli', 1)
+        cmds.setAttr(remap + '.value[0].vlp', 0.6)  # vlp: start point of a linear interpolate
+        cmds.setAttr(remap + '.value[0].vlfv', 0.0)  # vlfv: start value of a linear interpolate
+        cmds.setAttr(remap + '.value[0].vli', 1)  # using a linear interpolation
         cmds.setAttr(remap + '.value[1].vlp', 0.7)
         cmds.setAttr(remap + '.value[1].vlfv', 1.0)
-        cmds.setAttr(remap + '.value[1].vli', 1) # using a linear interpolation
+        cmds.setAttr(remap + '.value[1].vli', 1)
         cmds.connectAttr(eye_to_world + '.outputY', remap + '.inputValue')
 
         # the node to blend between cliff and ground using normal
@@ -741,38 +741,9 @@ class MarchingCubeNp(object):
         cmds.connectAttr(blend_height + '.output', cliff_ground_blend + '.color1')
         cmds.setAttr(cliff_ground_blend + '.color2', color_cliff[0], color_cliff[1], color_cliff[2], type='float3')
         cmds.connectAttr(remap + '.outValue', cliff_ground_blend + '.blender')
-        #cmds.connectAttr(blend_height + '.output', cliff_ground_blend)
 
-
-        # # this condition node determines whether the material is completely ground, when it is not completely cliff
-        # if_ground_blend = cmds.shadingNode('condition', asUtility=True)
-        # cmds.setAttr(if_ground_blend + '.operation', 1)  # 'greater than' mode
-        # cmds.setAttr(if_ground_blend + '.secondTerm', 0.6)  # set the threshold to 0.6
-        # cmds.connectAttr(eye_to_world + '.outputY', if_ground_blend + '.firstTerm')  # use normal to judge
-        # cmds.connectAttr(blend_height + '.output', if_ground_blend + '.colorIfTrue')  # if greater than threshold, is ground
-        # cmds.connectAttr(cliff_ground_blend + '.output', if_ground_blend + '.colorIfFalse')  # if not all ground, blend with cliff
-        #
-        # # this condition node determines whether the material is completely cliff
-        # if_cliff_blend = cmds.shadingNode('condition', asUtility=True)
-        # cmds.setAttr(if_cliff_blend + '.operation', 4)  # 'less than' mode
-        # cmds.setAttr(if_cliff_blend + '.secondTerm', 0.5)  # set threshold to 0.5
-        # cmds.setAttr(if_cliff_blend + '.colorIfTrue', color_cliff[0], color_cliff[1], color_cliff[2], type='float3')  # if less than threshold, is cliff
-        # cmds.connectAttr(if_ground_blend + '.outColor', if_cliff_blend + '.colorIfFalse')  # if not all cliff, blend with ground
-        # cmds.connectAttr(eye_to_world + '.outputY', if_cliff_blend + '.firstTerm')
-
-        #  set the final color!
-        #cmds.connectAttr(remap + '.outColor', shader + '.color')
-        #cmds.connectAttr(blend_height + '.output', shader + '.color')
+        # connect to output!
         cmds.connectAttr(cliff_ground_blend + '.output', shader + '.color')
-        # connections
-
-
-        #cmds.connectAttr(blend_height + '.output', blend_normal + '.color1')
-
-
-#        cmds.connectAttr(eye_to_world + '.outputY', blend_normal + '.blender')
-
-        # cmds.connectAttr(blend_normal + '.output', shader + '.color')
 
         shading_group = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)
         cmds.connectAttr(shader + ".outColor", shading_group + '.surfaceShader', f=True)
