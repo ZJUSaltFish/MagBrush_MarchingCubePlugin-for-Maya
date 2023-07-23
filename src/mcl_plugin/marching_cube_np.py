@@ -403,9 +403,11 @@ class MarchingCubeNp(object):
         cmds.delete(cmds.ls("block*"))
 
     def init_face(self):
+        self._sdf = np.ones(self._size * self._block_size +1, dtype=np.float32)
+        
         for i in range(self._size[0] * self._block_size + 1):
             for k in range(self._size[2] * self._block_size + 1):
-                self._sdf[i][0][k] = 0.0
+                self._sdf[i][0][k] = -1.0
 
         
         for i in range(self._size[0]):
@@ -491,7 +493,7 @@ class MarchingCubeNp(object):
                         #changed_blocks[block_index] = True
                         value = self._sdf[i][j][k]
                         value += tmp_addition
-                        self._sdf[i][j][k] = max(0, min(2, value))
+                        self._sdf[i][j][k] = max(-1, min(1, value))
 
         # find the block intersect with brush
         for i in range(min_x // self._block_size, max_x// self._block_size + 1):
@@ -533,6 +535,31 @@ class MarchingCubeNp(object):
         self._face_list.append(len(vertices))
         for i in range(len(vertices)):
             (x, y, z) = vertices[len(vertices) - i - 1]
+
+            if (x == 1):
+                x = - self._sdf[p_x][p_y + y // 2][p_z + z // 2]
+                dx = self._sdf[p_x + 1][p_y + y // 2][p_z + z // 2] - self._sdf[p_x][p_y + y // 2][p_z + z // 2]
+                if dx != 0.0:
+                    x = x / dx * 2
+                else:
+                    x = 1
+
+            if (y == 1):
+                y = - self._sdf[p_x + x // 2][p_y][p_z + z // 2]
+                dy = self._sdf[p_x + x // 2][p_y + 1][p_z + z // 2] - self._sdf[p_x + x // 2][p_y][p_z + z // 2]
+                if dy != 0.0:
+                    y = y / dy * 2
+                else:
+                    y = 1
+
+            if (z == 1):
+                z = - self._sdf[p_x + x // 2][p_y + y // 2][p_z]
+                dz = self._sdf[p_x + x // 2][p_y + y // 2][p_z + 1] - self._sdf[p_x + x // 2][p_y + y // 2][p_z]
+                if dz != 0.0:
+                    z = z / dz * 2
+                else:
+                    z = 1
+
             x = (x - 1) * size * 0.5 + 1 + p_x * size + self._offset[0]
             y = (y - 1) * size * 0.5 + 1 + p_y * size + self._offset[1]
             z = (z - 1) * size * 0.5 + 1 + p_z * size + self._offset[2]
@@ -566,7 +593,7 @@ class MarchingCubeNp(object):
                     type = 0
                     # for t in range(8):
                     for t, adj in enumerate(self._ADJACENT_SEQUENCE):
-                        if self._sdf[i + adj[0]][j + adj[1]][k + adj[2]] >= 1:
+                        if self._sdf[i + adj[0]][j + adj[1]][k + adj[2]] >= 0:
                             type += self._MUL[t]
                     if (type != 255):
                         self.makeCube(type, 1, i, j, k, [i == 0, i == self._size[0]*self._block_size - 1, j == 0, j == self._size[1]*self._block_size - 1, k == 0,
