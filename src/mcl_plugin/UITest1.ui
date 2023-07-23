@@ -27,7 +27,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap resource="pic.qrc">:/封面图/pic/Cover.png</pixmap>
+     <pixmap resource="picture.qrc">:/封面/pic/Cover.png</pixmap>
     </property>
     <property name="scaledContents">
      <bool>true</bool>
@@ -641,7 +641,7 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources>
-  <include location="pic.qrc"/>
+  <include location="picture.qrc"/>
  </resources>
  <connections/>
 </ui>

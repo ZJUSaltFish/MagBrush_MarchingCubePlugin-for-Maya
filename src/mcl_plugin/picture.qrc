@@ -1,5 +1,5 @@
 <RCC>
-  <qresource prefix="封面图">
+  <qresource prefix="封面">
     <file>pic/Cover.png</file>
   </qresource>
   <qresource prefix="按钮背景">

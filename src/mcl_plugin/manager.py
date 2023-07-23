@@ -8,7 +8,7 @@ import marching_cube_np as mcnp
 import inspect
 import os
 
-import pic
+import picture
 from PySide2 import QtGui
 from PySide2 import QtCore
 from PySide2 import QtWidgets
