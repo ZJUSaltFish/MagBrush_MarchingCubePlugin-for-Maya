@@ -7,6 +7,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from maya import cmds
 #import marching_cube_np
 
+import pic
+
 qtVersion = cmds.about(qtVersion=True)
 
 from PySide2 import QtGui
@@ -33,9 +35,10 @@ class MclGui():
     #下面是将UI里控件和代码里的函数连接起来，基础格式是 UI控件.Signal.Function，其中Function就是具体功能
         #button
         self.ui.Painter.clicked.connect(self.A)
-        self.ui.Drugger.clicked.connect(self.B)
-        self.ui.CreateCube.clicked.connect(self.C)
-        self.ui.CreateSphere.clicked.connect(self.D)
+
+        #checkbox
+        self.ui.Drugger.stateChanged.connect(self.B)
+
 
         self.ui.CreateTerrain_A.clicked.connect(self.E)
         self.ui.CreateTerrain_B.clicked.connect(self.F)
@@ -50,6 +53,16 @@ class MclGui():
         self.ui.MapSlider_2.valueChanged.connect(self.terrainSliderB)
         self.ui.MapSlider_3.valueChanged.connect(self.terrainSliderC)
         self.ui.MapSlider_4.valueChanged.connect(self.terrainSliderD)
+
+        #spinbox
+        self.ui.spinBox_1.valueChanged.connect(self.spinbox_1)
+        self.ui.spinBox_2.valueChanged.connect(self.spinbox_2)
+        self.ui.spinBox_3.valueChanged.connect(self.spinbox_3)
+        self.ui.spinBox_4.valueChanged.connect(self.spinbox_4)
+        self.ui.spinBox_5.valueChanged.connect(self.spinbox_5)
+        self.ui.spinBox_6.valueChanged.connect(self.spinbox_6)
+        self.ui.spinBox_7.valueChanged.connect(self.spinbox_7)
+
 
         #checkbox
 
@@ -113,17 +126,6 @@ class MclGui():
             cmds.setAttr('%s.ambientColor' % self.mat, self.strength * self.add_green[0], self.strength * self.add_green[1],
                          self.strength * self.add_green[2], type="double3")
 
-        
-    #方形画笔
-    def C(self):
-        print ("C")
-    # 方形画笔
-    def D(self):
-        print ("D")
-        self.A
-        self.sliderA
-        self.sliderB
-        self.sliderC
 
     #创建地形1
     def E(self):
@@ -145,6 +147,7 @@ class MclGui():
         self.A
         #这个是获取进度条的数值
         self.Radius = self.ui.horizontalSlider_A.value()
+        self.ui.spinBox_5.setValue(self.ui.horizontalSlider_A.value())
         # 更新球体的半径
         cmds.setAttr(self.sphere + '.radius', self.Radius)
         scalenow = self.Radius / self.sphereRadius
@@ -155,6 +158,7 @@ class MclGui():
         print ("sliderB")
         self.A
         self.Hardness = self.ui.horizontalSlider_B.value()/100
+        self.ui.spinBox_6.setValue(self.ui.horizontalSlider_B.value())
         # 更新球体的硬度
         cmds.setAttr(self.sphere + '.hardness', self.Hardness)
         if (self.Hardness < 1):
@@ -167,6 +171,7 @@ class MclGui():
         print ("sliderC")
         self.A
         self.strength = self.ui.horizontalSlider_C.value()/100
+        self.ui.spinBox_3.setValue(self.ui.horizontalSlider_C.value())
         # 更新球体的强度/ambient颜色
         cmds.setAttr(self.sphere + '.strength', self.strength)
         if (cmds.getAttr(self.sphere + '.isErase')):
@@ -191,6 +196,35 @@ class MclGui():
     #地形高
     def terrainSliderD(self):
         print("terrainSliderD")
+
+    #地形区块大小spinbox
+    def spinbox_1(self):
+        print("terrainSlider1")
+
+    #地形长spinbox
+    def spinbox_2(self):
+        print("terrainSlider2")
+
+    #地形宽spinbox
+    def spinbox_3(self):
+        print("terrainSlider3")
+
+    #地形高spinbox
+    def spinbox_4(self):
+        print("terrainSlider4")
+
+    #画笔大小spinbox
+    def spinbox_5(self):
+        self.sliderA
+        self.ui.horizontalSlider_A.setValue(self.ui.spinBox_5.value())
+
+    def spinbox_6(self):
+        self.sliderB
+        self.ui.horizontalSlider_B.setValue(self.ui.spinBox_6.value())
+
+    def spinbox_7(self):
+        self.sliderC
+        self.ui.horizontalSlider_C.setValue(self.ui.spinBox_7.value())
 
 
 if __name__ == '__main__':
