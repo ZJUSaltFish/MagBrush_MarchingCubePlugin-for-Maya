@@ -102,9 +102,9 @@ class MclManager(object):
 
         # block size, x size, y size, z size of terrain
         ui_window.MapSlider_1.valueChanged.connect(lambda x: (self.set_mcl_block(x), self.ui.spinBox_1.setValue(x)))
-        ui_window.MapSlider_2.valueChanged.connect(lambda x: (self.set_mcl_y(x), self.ui.spinBox_2.setValue(x)))
-        ui_window.MapSlider_3.valueChanged.connect(lambda y: (self.set_mcl_x(y), self.ui.spinBox_3.setValue(y)))
-        ui_window.MapSlider_4.valueChanged.connect(lambda z: (self.set_mcl_x(z), self.ui.spinBox_4.setValue(z)))
+        ui_window.MapSlider_2.valueChanged.connect(lambda x: (self.set_mcl_x(x), self.ui.spinBox_2.setValue(x)))
+        ui_window.MapSlider_3.valueChanged.connect(lambda z: (self.set_mcl_z(z), self.ui.spinBox_3.setValue(z)))
+        ui_window.MapSlider_4.valueChanged.connect(lambda y: (self.set_mcl_y(y), self.ui.spinBox_4.setValue(y)))
 
         # spin box
         ui_window.spinBox_1.valueChanged.connect(lambda: self.ui.MapSlider_1.setValue(self.ui.spinBox_1.value()))
