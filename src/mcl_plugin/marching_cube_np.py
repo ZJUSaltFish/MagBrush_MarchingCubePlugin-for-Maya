@@ -364,15 +364,15 @@ class MarchingCubeNp(object):
     ]
 
     # Initialize marching_cube.
-    def __init__(self):
+    def __init__(self, x_blocks=5, y_blocks=5, z_blocks=5, block_size=8):
         """
         Marching cube initialization
         """
         # 定义长宽高大小
         # num of blocks in x/y/z direction
-        self._size = np.array([5,5,5])
+        self._size = np.array([x_blocks,y_blocks,z_blocks])
         # num of cubes in a block (default 8x8x8)
-        self._block_size = 8
+        self._block_size = block_size
 
         # internal of sdf sampling. default = 1, which means 1 unit between two sample points
         self._interval = 1
@@ -401,6 +401,8 @@ class MarchingCubeNp(object):
         # new mesh generated
         self._new_mesh = om.MFnMesh()
 
+    def __del__(self):
+        pass
 
     def init_face(self):
         for i in range(self._size[0] * self._block_size + 1):
@@ -439,7 +441,7 @@ class MarchingCubeNp(object):
             for k in range(self._size[2]):
                 self.render(i, 0, k)
 
-        add_point((self._size * self._block_size +1)/2, self._size[0] * self._block_size/2, -1.0)
+        self.add_point((self._size * self._block_size +1)/2, self._size[0] * self._block_size/2, -1.0)
 
     def add_point(self, point, dist, addition):
         """
