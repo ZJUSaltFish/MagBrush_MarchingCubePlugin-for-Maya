@@ -30,3 +30,7 @@ def create_mcl_material():
     cmds.setAttr(blend_height + '.color2', color_dirt[0], color_dirt[1], color_dirt[2], type='double3')
 
     blend_normal = cmds.shadingNode('blendColor', asUtility=True)
+
+
+
+
