@@ -4,23 +4,15 @@ import sys
 # Add this plugin to maya python dir
 script_file = inspect.getframeinfo(inspect.currentframe()).filename
 script_dir = os.path.dirname(os.path.abspath(script_file))
-script_dir += '\\mcl_plugin'
-sys.path.append(script_dir)
+sys.path.append(script_dir + '\\mcl_plugin')
 # Add numpy to maya python dir
-script_file = inspect.getframeinfo(inspect.currentframe()).filename
-script_dir = os.path.dirname(os.path.abspath(script_file))
-script_dir += '\\numpy'
-sys.path.append(script_dir)
+sys.path.append(script_dir + '\\numpy')
 # Add pyqt5 to maya python dir
-script_file = inspect.getframeinfo(inspect.currentframe()).filename
-script_dir = os.path.dirname(os.path.abspath(script_file))
-script_dir += '\\PyQt5'
-sys.path.append(script_dir)
+sys.path.append(script_dir + '\\PyQt5')
 # Add PySide2 to maya python dir
-script_file = inspect.getframeinfo(inspect.currentframe()).filename
-script_dir = os.path.dirname(os.path.abspath(script_file))
-script_dir += '\\PySide2'
-sys.path.append(script_dir)
+sys.path.append(script_dir + '\\PySide2')
+# Add
+sys.path.append(script_dir + '\\PyQt5\\PyQt5')
 
 import maya.cmds as cmds
 import maya.mel as mel
