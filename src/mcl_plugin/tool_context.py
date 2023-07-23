@@ -4,7 +4,7 @@ import time
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
-
+import math
 
 from marching_cube_np import MarchingCubeNp as mcnp
 
@@ -68,8 +68,15 @@ class BrushTool():
         # self._event_loop = asyncio.new_event_loop()
         # registering
         self._DRAGGER_CONTEXT = cmds.draggerContext(self.CONTEXT_NAME, initialize=self._switch_on, finalize=self._switch_off, edit=False,
-                                                    image1='commandButton.png', dragCommand=self._draw, pressCommand=self._draw)
+                                                    image1='commandButton.png',
+                                                    dragCommand=self._draw, pressCommand=self._draw, releaseCommand = self._release)
         # self._KEY_EVENT = om.MEventMessage.addEventCallback("KeyDown", self._hotkey_callback)
+
+        # variables of a stroke
+        self._start_source = None
+        self._start_dir = None
+        self._stroke_start = None
+        self._brush_dragging = False
 
     def assign_target(self, mcl_instance):
         """
@@ -121,9 +128,7 @@ class BrushTool():
 
     def set_hardness(self, hardness):
         self._brush_hardness = hardness / 100.0
-
         cmds.setAttr('%s.transparency[1].transparency_Position' % self._brush_mat, 1 - self._brush_hardness * 0.9)
-
 
     def set_strength(self, strength):
         self._brush_strength = strength / 100.0
@@ -175,7 +180,28 @@ class BrushTool():
 
     def _draw(self):
         """
-        This function draws
+        This function combine _press and _draw to prevent bug caused by maya dragCommand and pressCommand
+        :return:
+        """
+        if self._brush_dragging:
+            self._drag()
+        else:
+            self._brush_dragging = True
+            self._press()
+
+    def _release(self):
+        """
+        This function is called when user release mouse
+        :return:
+        """
+        self._brush_dragging = False
+        self._start_source = None
+        self._start_dir = None
+        self._stroke_start = None
+
+    def _press(self):
+        """
+        This function called when mouse pressed. it stores the start point of stroke
         :return: None
         """
         # Only draw when there is a landscape instance
@@ -184,7 +210,46 @@ class BrushTool():
         # first update brush mode
         self.update_mode()
         # then get brush location
-        location = self._ray_check()
+        tmp = self._ray_check()
+        # location = self._ray_march()
+        if tmp is None:
+            # failed to start a stroke on void
+            self._hide_brush()
+
+            self._stroke_start = None
+            self._start_source = None
+            self._start_dir = None
+
+            self._brush_dragging = False
+        else:
+            (x,y,z,t) = tmp[0]
+            self._stroke_start = om.MPoint(x,y,z)
+            self._start_source = tmp[1]
+            self._start_dir = tmp[2]
+            # place brush at location
+            self._render_brush(location=self._stroke_start)
+            # edit marching cubes at location
+            (x, y, z, t) = self._stroke_start
+            if self._brush_mode == BrushModes.subtract:
+                # press shift to subtract
+                self._mcl.add_point(om.MPoint(x, y, z),
+                                 self._brush_radius, self._brush_strength, self._brush_hardness)
+            else:
+                self._mcl.add_point(om.MPoint(x, y, z),
+                                 self._brush_radius, -self._brush_strength, self._brush_hardness)
+
+    def _drag(self):
+        """
+        This function called when user is dragging cursor to draw
+        :return: None
+        """
+        # Only draw when there is a landscape instance
+        if self._mcl is None:
+            return
+        # first update brush mode
+        self.update_mode()
+        # then get brush location
+        location = self._ray_to_view()
         # location = self._ray_march()
         if location is None:
             self._hide_brush()
@@ -192,7 +257,7 @@ class BrushTool():
             # place brush at location
             self._render_brush(location=location)
             # edit marching cubes at location
-            (x, y, z, t) = location
+            (x, y, z) = (location.x, location.y, location.z)
             if self._brush_mode == BrushModes.subtract:
                 # press shift to subtract
                 self._mcl.add_point(om.MPoint(x, y, z),
@@ -201,6 +266,28 @@ class BrushTool():
                 self._mcl.add_point(om.MPoint(x, y, z),
                                  self._brush_radius, -self._brush_strength, self._brush_hardness)
             # self._mcl.render()
+
+    def _ray_to_view(self):
+        """
+        This function calculates the intersection point of mouse position ray and view plane passing self._stroke_start
+        """
+        mouse_pos = cmds.draggerContext(self.CONTEXT_NAME, query=True, dragPoint=True)
+
+        viewport_pos = om.MPoint(mouse_pos[0], mouse_pos[1], 0)
+        ray_source = om.MPoint()
+        ray_direction = om.MVector()
+        omui.M3dView().active3dView().viewToWorld(
+            int(viewport_pos[0]), int(viewport_pos[1]), ray_source, ray_direction)
+
+        normal = self._start_source - self._stroke_start
+
+        angle_btn = om.MVector.angle(-normal, ray_direction)
+
+        view_to_point = ray_direction * om.MVector.length(normal) / math.cos(angle_btn)
+
+        target = self._stroke_start + normal + om.MVector(ray_source) - om.MVector(self._start_source) + view_to_point
+
+        return om.MVector(target)
 
     def _ray_check(self):
         mouse_pos = cmds.draggerContext(
@@ -243,7 +330,7 @@ class BrushTool():
 
         if final_hit_return != []:
             intersect_point = final_hit_return[0]
-            return intersect_point
+            return (intersect_point, ray_source, ray_direction)
         else:
             return None
 
