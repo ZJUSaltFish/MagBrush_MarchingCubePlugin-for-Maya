@@ -210,7 +210,8 @@ class BrushTool():
         # first update brush mode
         self.update_mode()
         # then get brush location
-        tmp = self._ray_check()
+        mouse_pos = cmds.draggerContext(self.CONTEXT_NAME, query=True, anchorPoint=True)
+        tmp = self._ray_check(mouse_pos)
         # location = self._ray_march()
         if tmp is None:
             # failed to start a stroke on void
@@ -249,7 +250,8 @@ class BrushTool():
         # first update brush mode
         self.update_mode()
         # then get brush location
-        location = self._ray_to_view()
+        mouse_pos = cmds.draggerContext(self.CONTEXT_NAME, query=True, dragPoint=True)
+        location = self._ray_to_view(mouse_pos)
         # location = self._ray_march()
         if location is None:
             self._hide_brush()
@@ -267,11 +269,10 @@ class BrushTool():
                                  self._brush_radius, -self._brush_strength, self._brush_hardness)
             # self._mcl.render()
 
-    def _ray_to_view(self):
+    def _ray_to_view(self, mouse_pos):
         """
         This function calculates the intersection point of mouse position ray and view plane passing self._stroke_start
         """
-        mouse_pos = cmds.draggerContext(self.CONTEXT_NAME, query=True, dragPoint=True)
 
         viewport_pos = om.MPoint(mouse_pos[0], mouse_pos[1], 0)
         ray_source = om.MPoint()
@@ -289,9 +290,8 @@ class BrushTool():
 
         return om.MVector(target)
 
-    def _ray_check(self):
-        mouse_pos = cmds.draggerContext(
-            self.CONTEXT_NAME, query=True, dragPoint=True)
+    def _ray_check(self, mouse_pos):
+        
 
         viewport_pos = om.MPoint(mouse_pos[0], mouse_pos[1], 0)
 
