@@ -398,6 +398,8 @@ class MarchingCubeNp(object):
         # new mesh generated
         self._new_mesh = om.MFnMesh()
 
+        self._material = self.create_mcl_material()
+
     def __del__(self):
         self._sdf = np.ones(self._size * self._block_size +1, dtype=np.float32)
         cmds.delete(cmds.ls("block*"))
@@ -576,13 +578,9 @@ class MarchingCubeNp(object):
         self._new_mesh.create(self._point_list, self._face_list, self._num_list)
         self._new_mesh.setName("TmpMesh")
 
-        default_material = 'lambert1'
-
         mesh_objects = cmds.ls("TmpMesh*")[0]
 
-        shading_group = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)
-        cmds.connectAttr(default_material + ".outColor", shading_group + '.surfaceShader', f=True)
-        cmds.sets(mesh_objects, edit=True, forceElement=shading_group)
+        cmds.sets(mesh_objects, edit=True, forceElement=self._material)
         cmds.polySoftEdge(mesh_objects, cch=1, a="0")
 
         # Renaming.
@@ -652,3 +650,43 @@ class MarchingCubeNp(object):
             return 1.0/3 *( self.mesh[x+1][y][z]*lerpx + self.mesh[x][y+1][z]*lerpy + self.mesh[x][y][z+1]*lerpz + self.mesh[x][y][z]*(3-lerpx-lerpy-lerpz) )
         else:
             return 1
+
+    import maya.cmds as cmds
+    import maya.api.OpenMaya as om
+
+    def create_mcl_material(self):
+        shader = cmds.shadingNode('lambert', asShader=True, name="mcl_terrain_default")
+
+        sampler = cmds.shadingNode('samplerInfo', asUtility=True)
+
+        color_grass = (0.388, 1.00, 0.101)
+        color_dirt = (0.530, 0.499, 0.179)
+        color_cliff = (0.208, 0.211, 0.222)
+
+        blend_height = cmds.shadingNode('blendColors', asUtility=True)
+        cmds.setAttr(blend_height + '.color1', color_grass[0], color_grass[1], color_grass[2], type='float3')
+        cmds.setAttr(blend_height + '.color2', color_dirt[0], color_dirt[1], color_dirt[2], type='float3')
+
+        blend_normal = cmds.shadingNode('blendColors', asUtility=True)
+        cmds.setAttr(blend_normal + '.color1', color_cliff[0], color_cliff[1], color_cliff[2], type='float3')
+
+        scale_factor = cmds.shadingNode('multiplyDivide', asUtility=True)
+        cmds.setAttr(scale_factor + '.operation', 2)
+        cmds.setAttr(scale_factor + '.input2', 20.0, 1.0, 1.0, type='float3')
+
+        eye_to_world = cmds.shadingNode('pointMatrixMult', asUtility=True)
+        cmds.setAttr(eye_to_world + '.vm', True)
+
+        cmds.connectAttr(sampler + '.pointWorldY', scale_factor + '.input1X')
+        cmds.connectAttr(scale_factor + '.outputX', blend_height + '.blender')
+        cmds.connectAttr(blend_height + '.output', blend_normal + '.color2')
+
+        cmds.connectAttr(sampler + '.e2w', eye_to_world + '.inMatrix')
+        cmds.connectAttr(sampler + '.normalCamera', eye_to_world + '.inPoint')
+        cmds.connectAttr(eye_to_world + '.outputY', blend_normal + '.blender')
+
+        cmds.connectAttr(blend_normal + '.output', shader + '.color')
+
+        shading_group = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)
+        cmds.connectAttr(shader + ".outColor", shading_group + '.surfaceShader', f=True)
+        return shading_group

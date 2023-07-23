@@ -26,11 +26,17 @@ def create_mcl_material():
     color_cliff = (0.208, 0.211, 0.222)
 
     blend_height = cmds.shadingNode('blendColor', asUtility=True)
-    cmds.setAttr(blend_height + '.color1', color_grass[0], color_grass[1], color_grass[2], type='double3')
-    cmds.setAttr(blend_height + '.color2', color_dirt[0], color_dirt[1], color_dirt[2], type='double3')
+    cmds.setAttr(blend_height + '.color1', color_grass[0], color_grass[1], color_grass[2], type='float3')
+    cmds.setAttr(blend_height + '.color2', color_dirt[0], color_dirt[1], color_dirt[2], type='float3')
 
     blend_normal = cmds.shadingNode('blendColor', asUtility=True)
 
+    scale_factor = cmds.shadingNode('multiplyDivide', asUtility=True, operaiton = 2)
+    cmds.setAttr(scale_factor + 'input2', 1.0, 1.0, 1.0, type='float3')
+    cmds.connectAttr(sampler + '.pointWorldY', scale_factor + '.input1')
 
+    cmds.connectAttr(scale_factor + '.output', blend_height + '.blender')
 
+    cmds.connectAttr(blend_height + '.output', shader + '.color')
 
+    return shader
