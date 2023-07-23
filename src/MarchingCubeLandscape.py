@@ -4,7 +4,7 @@ import sys
 # Add this plugin to maya python dir
 script_file = inspect.getframeinfo(inspect.currentframe()).filename
 script_dir = os.path.dirname(os.path.abspath(script_file))
-script_dir += '\mcl_plugin'
+script_dir += '\\mcl_plugin'
 sys.path.append(script_dir)
 # Add numpy to maya python dir
 script_file = inspect.getframeinfo(inspect.currentframe()).filename

@@ -2,8 +2,16 @@ import maya.cmds as cmds
 import maya.mel as mel
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
-from GUI_setup import MclGui
-from tool_context import BrushTool
+import tool_context as tool
+import marching_cube_np as mcnp
+
+import inspect
+import os
+
+from PySide2 import QtGui
+from PySide2 import QtCore
+from PySide2 import QtWidgets
+from PySide2 import QtUiTools
 
 
 class MclManager(object):
@@ -31,11 +39,25 @@ class MclManager(object):
         Initialize the mcl class. should receive a maya plugin function set
         :return:
         """
-        if (plugin_fn != None):
-            self.plugin_fn = plugin_fn
-            self.gui = MclGui()
-            self.add_to_shelf()
-            self.brush_tool = BrushTool()
+        assert plugin_fn is not None, "Failed to load the mcl plugin!"
+        # restore plugin
+        self.plugin_fn = plugin_fn
+        # add to shelf
+        self.add_to_shelf()
+        # tools initialize
+        self.brush_tool = tool.BrushTool()
+        # initialize ui
+        script_file = inspect.getframeinfo(inspect.currentframe()).filename
+        script_dir = os.path.dirname(os.path.abspath(script_file))
+        print(script_dir + "\\UITest.ui")
+        self._ui = self._load_gui(script_dir + ".\\UITest1.ui")
+        # pointer to marching cube instance
+        self._mcl = None
+        # parameters of creating mcl
+        self._mcl_x = 5
+        self._mcl_y = 5
+        self._mcl_z = 5
+        self._mcl_block_size = 8
 
     def __del__(self):
         pass
@@ -46,13 +68,6 @@ class MclManager(object):
         :return: None
         """
         self.brush_tool.enable()
-        """
-        try:
-            #self.plugin_fn.registerContextCommand(self.TOOL_NAME, self.create_context)
-            print("Successfully Initialized")
-        except:
-            om.MGlobal.displayError("Failed to register Editor")
-        """
 
     def stop_tool(self, _):
         """
@@ -60,12 +75,118 @@ class MclManager(object):
         :return: None
         """
 
+    def _load_gui(self, uipath):
+        # load ui from file
+        uifile = QtCore.QFile(uipath)
+        uifile.open(QtCore.QFile.ReadOnly)
+        ui_window = QtUiTools.QUiLoader().load(uifile)
+        uifile.close()
+        # initialize ui with functions
+        # create brush
+        #ui_window.Painter.clicked.connect(self.A)
+        #
+        #ui_window.Drugger.clicked.connect(self.B)
+        #ui_window.CreateCube.clicked.connect(self.C)
+        ui_window.CreateSphere.clicked.connect(self.use_sphere_brush)
+
+        # create box landscape
+        ui_window.CreateTerrain_A.clicked.connect(self.create_plane_mcl)
+        # create spherical terrain
+        ui_window.CreateTerrain_B.clicked.connect(self.create_sphere_mcl)
+        # kill all terrain
+        ui_window.ClearAll.clicked.connect(self.delete_mcl)
+
+        # radius, hardness, strength of brush
+        ui_window.horizontalSlider_A.valueChanged.connect(self.brush_tool.set_radius)
+        ui_window.horizontalSlider_B.valueChanged.connect(self.brush_tool.set_hardness)
+        ui_window.horizontalSlider_C.valueChanged.connect(self.brush_tool.set_strength)
+
+        # block size, x size, y size, z size of terrain
+        ui_window.MapSlider_1.valueChanged.connect(self.set_mcl_x)
+        ui_window.MapSlider_2.valueChanged.connect(self.set_mcl_y)
+        ui_window.MapSlider_3.valueChanged.connect(self.set_mcl_z)
+        ui_window.MapSlider_4.valueChanged.connect(self.set_mcl_block)
+
+        return ui_window
+
+    def create_sphere_mcl(self):
         """
-        try:
-            self.plugin_fn.deregisterContextCommand(self.TOOL_NAME)
-        except:
-            om.MGlobal.displayError(("Failed to unregister Editor"))
+        Create a marching cube terrain with a spherical initialization
+        :return: None
         """
+        self._create_mcl()
+        self._mcl.init_sphere()
+
+    def create_plane_mcl(self):
+        """
+        Create a marching cube terrain with a planer initialization
+        :return: None
+        """
+        self._create_mcl()
+        self._mcl.init_face()
+
+    def _create_mcl(self):
+        """
+        This function creates a new marching cube instance
+        :return: marching cubes instance. See marching_cube_np.py
+        """
+        self.delete_mcl()
+        self._mcl = mcnp.MarchingCubeNp(self._mcl_x, self._mcl_y, self._mcl_z, self._mcl_block_size)
+        assert self._mcl is not None, "failed to create terrain"
+        self.brush_tool.assign_target(self._mcl)
+
+    def delete_mcl(self):
+        """
+        This function deletes the existing marching cube terrain and reset all that related to it
+        :return: None
+        """
+        if self._mcl is not None:
+            del self._mcl
+        self._mcl = None
+        self.brush_tool.assign_target(None)
+
+    def use_sphere_brush(self):
+        """
+        Set brush to sphere
+        :return: None
+        """
+        self.brush_tool.enable(tool.BrushTypes.sphere)
+
+    def use_cube_brush(self):
+        """
+        set brush type to cube
+        :return: None
+        """
+        self.brush_tool.enable(tool.BrushTypes.cube)
+
+    def set_mcl_x(self,x):
+        """
+        This tool set the mcl_x for creating
+        Note it can not be used for editing
+        :return: None
+        """
+        self._mcl_x = x
+    def set_mcl_y(self,y):
+        """
+        This tool set the mcl_y for creating
+        Note it can not be used for editing
+        :return: None
+        """
+        self._mcl_y = y
+    def set_mcl_z(self,z):
+        """
+        This tool set the mcl_z for creating
+        Note it can not be used for editing
+        :return: None
+        """
+        self._mcl_z = z
+    def set_mcl_block(self,b):
+        """
+        This tool set the mcl_block_sie for creating
+        Note it can not be used for editing
+        :return: None
+        """
+        self._mcl_block_size = b
 
     def show_gui(self):
         """
@@ -105,6 +226,8 @@ class MclManager(object):
 
         cmds.showWindow(WINDOW_NAME)
 
+    def show_ui(self):
+        self._ui.show()
     def add_to_shelf(self):
         """
         This function creates a new tool on the tool shelf.
@@ -116,7 +239,7 @@ class MclManager(object):
             "global string $gShelfTopLevel;$temp = $gShelfTopLevel")
         cmds.setParent("%s|Custom" % shelf_top_level)
         cmds.shelfButton(annotation=self.TOOL_NAME,
-                         image1='commandButton.png', command=self.show_gui)
+                         image1='commandButton.png', command=self.show_ui)
 
     def remove_from_shelf(self):
         """

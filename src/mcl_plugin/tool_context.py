@@ -6,7 +6,7 @@ import maya.api.OpenMaya as om
 import maya.api.OpenMayaUI as omui
 
 
-# from marching_cube_np import MarchingCubeNp as mcnp
+from marching_cube_np import MarchingCubeNp as mcnp
 
 from marching_cube import MarchingCube
 
@@ -38,7 +38,9 @@ class BrushTool():
         Switching its radius, strength, hardness, shape, mode according to GUI
         """
         # initialize variables
-        self.MC = MarchingCube()
+        # the pointer to marching cube instance
+        self._mcl = None
+        # name of brush object
         self._BRUSH_NAME = 'mcl_brush'
         # the material that brush will use
         self._brush_mat = self._create_brush_mat()
@@ -64,6 +66,14 @@ class BrushTool():
         self._DRAGGER_CONTEXT = cmds.draggerContext(self.CONTEXT_NAME, initialize=self._switch_on, finalize=self._switch_off, edit=False,
                                                     image1='commandButton.png', dragCommand=self._draw, pressCommand=self._draw)
         # self._KEY_EVENT = om.MEventMessage.addEventCallback("KeyDown", self._hotkey_callback)
+
+    def assign_target(self, mcl_instance):
+        """
+        This function sets the target of the tool. If no target set, tool will not work
+        :param mcl_instance: instance of MarchingCubeNp. See marching_cube_np.py
+        :return: None
+        """
+        self._mcl = mcl_instance
 
     def enable(self, *brush_type):
         """
@@ -161,6 +171,9 @@ class BrushTool():
         This function draws
         :return: None
         """
+        # Only draw when there is a landscape instance
+        if self._mcl is None:
+            return
         # first update brush mode
         self.update_mode()
         # then get brush location
@@ -175,12 +188,12 @@ class BrushTool():
             (x, y, z, t) = location
             if self._brush_mode == BrushModes.subtract:
                 # press shift to subtract
-                self.MC.addPoint(om.MPoint(x, y, z),
+                self._mcl.addPoint(om.MPoint(x, y, z),
                                  self._brush_radius, self._brush_strength, self._brush_hardness)
             else:
-                self.MC.addPoint(om.MPoint(x, y, z),
+                self._mcl.addPoint(om.MPoint(x, y, z),
                                  self._brush_radius, -self._brush_strength, self._brush_hardness)
-            # self.MC.render()
+            # self._mcl.render()
 
     def _ray_check(self):
         mouse_pos = cmds.draggerContext(
@@ -246,7 +259,7 @@ class BrushTool():
         find = False
         for i in range(128):
             ray_source += ray_direction * 0.5  # step:0.5
-            if (self.MC.get_distance(ray_source) < 0.5):
+            if (self._mcl.get_distance(ray_source) < 0.5):
                 find = True
                 break
         if find is False:
@@ -255,7 +268,7 @@ class BrushTool():
             # do a more detailed marching
             for i in range(10):
                 ray_source -= ray_direction * 0.05
-                if (self.MC.get_distance(ray_source) > 0.5):
+                if (self._mcl.get_distance(ray_source) > 0.5):
                     break
             return ray_source
 
