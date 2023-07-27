@@ -16,7 +16,8 @@ It works in win11. We don't know whether it work in MAC / Linux or not
 
 **GUI:**
 
-<img src="C:\Users\P1\AppData\Roaming\Typora\typora-user-images\image-20230727122410232.png" alt="image-20230727122410232" style="zoom:50%;" />
+<img width="295" alt="image" src="https://github.com/ZJUSaltFish/MagBrush_MarchingCubePlugin-for-Maya/assets/114348635/c0b21e2c-5bad-4394-81a9-6918772906b7">
+
 
 **Terrain Creating:** 
 
