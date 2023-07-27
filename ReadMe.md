@@ -1,0 +1,78 @@
+# MagBrush - MarchingCube Plugin for Maya
+
+A simple plugin for maya2023, enables creating landscape with marching-cube method.
+
+## Usage
+
+Maya - windows - plugin manager - explore - load MarchingCubeLandscape.py
+
+Then you will find a mcl(marching cube landscape) button in shelf/Custom
+
+This plugin can be load from any direction in computer. But you'd best place them in maya's default plugin folder, for auto loading
+
+It works in win11. We don't know whether it work in MAC / Linux or not
+
+
+
+**GUI:**
+
+<img src="C:\Users\P1\AppData\Roaming\Typora\typora-user-images\image-20230727122410232.png" alt="image-20230727122410232" style="zoom:50%;" />
+
+**Terrain Creating:** 
+
+Block Size: Num of cubes in a block
+
+Length / Width / Height: Num of block in x / z / y direction
+
+Plane / Sphere: Create a basic terrain with plane/sphere shape
+
+**Brush Parameters:**
+
+Size: Radius of sphere brush
+
+Hardness: Speed of strength attenuation
+
+Intensity: Strength of brush
+
+Generating: Enable brush
+
+Clear All: delete current terrain
+
+
+
+**Hotkey:**
+
+Up to now, only one hotkey: SHIFT hold - switch brush to subtract mode
+
+
+
+## File Structure:
+
+**src:** root folder, can be an arbitrary name.(English only)
+|- **mcl_plugin:** all the utilities of mcl plugin
+|   |- **pic:** some pictures
+|   |- **init:** empty but needed
+|   |- **manager:** central control
+|   |- **marching_cube_np:** marching_cube implementation using numpy
+|   |- **picture:** script to load pictures for UI
+|   |- **picture.qrc:** support file
+|   |- **tool_context:** script to control maya draggerContext as a tool
+|   |- **UITest1.ui:** ui design based on PyQt
+|- **numpy:** site-package numpy
+|- **PyQt5:** site-package PyQt5
+|- **Pyside2:** site-package Pyside2
+|- **MarchingCubeLandscape:** Entry of mcl plugin. To load mcl, use maya plugin manager to load this file.
+
+**Sample Scene:**  .mb files as example
+
+**ReadMe:** This file
+
+## 
+
+## WARN
+
+Marching cube is an inefficient algorithm. Maya is also inefficient, and single-thread in kernel.
+
+So this plugin is of very low running speed. **Don't create a large terrain** if your cpu is not good enough.
+
+(We don't know how to optimize creating and rendering meshes in maya)

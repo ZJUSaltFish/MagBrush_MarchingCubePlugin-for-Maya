@@ -172,6 +172,7 @@ class MclManager(object):
         :return: None
         """
         if self._mcl is not None:
+            self._mcl.unload()
             del self._mcl
         self._mcl = None
         self.brush_tool.assign_target(None)
