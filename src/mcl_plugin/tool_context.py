@@ -8,13 +8,6 @@ import math
 
 from marching_cube_np import MarchingCubeNp as mcnp
 
-from marching_cube import MarchingCube
-
-from threading import Thread, Event
-from time import sleep
-import asyncio
-
-
 from enum import Enum
 
 
@@ -67,7 +60,7 @@ class BrushTool():
         # self._brush_async = None
         # self._event_loop = asyncio.new_event_loop()
         # registering
-        self._DRAGGER_CONTEXT = cmds.draggerContext(self.CONTEXT_NAME, initialize=self._switch_on, finalize=self._switch_off, edit=False,
+        cmds.draggerContext(self.CONTEXT_NAME, initialize=self._switch_on, finalize=self._switch_off, edit=False,
                                                     image1='commandButton.png',
                                                     dragCommand=self._draw, pressCommand=self._draw, releaseCommand = self._release)
         # self._KEY_EVENT = om.MEventMessage.addEventCallback("KeyDown", self._hotkey_callback)
@@ -77,6 +70,13 @@ class BrushTool():
         self._start_dir = None
         self._stroke_start = None
         self._brush_dragging = False
+
+    def unload(self):
+        self._mcl = None
+        cmds.setToolTo("moveSuperContext")
+        if cmds.draggerContext(self.CONTEXT_NAME, exists=True):
+            cmds.deleteUI(self.CONTEXT_NAME, toolContext=True)
+        print("Tool Context Deleted")
 
     def assign_target(self, mcl_instance):
         """
@@ -367,20 +367,6 @@ class BrushTool():
                 if (self._mcl.get_distance(ray_source) > 0.5):
                     break
             return ray_source
-
-    async def _brush_async_control(self):
-        while True:
-            print("Check")
-            self._ray_check()
-            await asyncio.sleep(0.05)
-
-    def _brush_threading(self, event):
-        while True:
-            print(cmds.draggerContext(
-                self.CONTEXT_NAME, query=True, dragPoint=True))
-            sleep(0.05)
-            if event.isSet():
-                break
 
     def _render_brush(self, *, location):
         """

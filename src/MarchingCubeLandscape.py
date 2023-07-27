@@ -21,8 +21,6 @@ import maya.api.OpenMayaUI as omui
 
 import mcl_plugin.manager as manager
 
-
-
 def maya_useNewAPI():
     """
     This is an empty function telling maya to use api2.0
@@ -36,7 +34,7 @@ def initializePlugin(plugin_Object):
     :return: none
     """
     plugin_Fn = om.MFnPlugin(plugin_Object, 'ZJU', '1.0', 'Any')
-    plugin_manager = manager.MclManager(plugin_Fn)
+    manager.MclManager(plugin_Fn)
 
 def uninitializePlugin(plugin_Object):
     """
@@ -44,4 +42,7 @@ def uninitializePlugin(plugin_Object):
     :param plugin_Object:
     :return:
     """
-    pass
+    # using single instance to get control
+    plugin_manager = manager.MclManager()
+    plugin_manager.unload()
+    print("Plugin Unloaded")

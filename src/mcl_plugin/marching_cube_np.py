@@ -365,7 +365,7 @@ class MarchingCubeNp(object):
     ]
 
     # Initialize marching_cube.
-    def __init__(self, x_blocks=5, y_blocks=5, z_blocks=5, block_size=8):
+    def __init__(self, x_blocks=5, y_blocks=5, z_blocks=5, block_size=8, material='lambert'):
         """
         Marching cube initialization
         """
@@ -398,11 +398,12 @@ class MarchingCubeNp(object):
         # new mesh generated
         self._new_mesh = om.MFnMesh()
 
-        self._material = self.create_mcl_material()
+        self._material = material
 
-    def __del__(self):
+    def unload(self):
         self._sdf = np.ones(self._size * self._block_size +1, dtype=np.float32)
         cmds.delete(cmds.ls("block*"))
+        print("Marching Cubes Deleted")
 
     def init_face(self):
         self._sdf = np.ones(self._size * self._block_size +1, dtype=np.float32)
@@ -681,70 +682,3 @@ class MarchingCubeNp(object):
     import maya.cmds as cmds
     import maya.api.OpenMaya as om
 
-    def create_mcl_material(self):
-        """
-        create a landscape auto material.
-        material
-        |- ground: the flatter, the more ground
-        |   |- grass: the higher, the more grass
-        |   |- dirt: the lower, the more dirt
-        |- cliff: the steeper, the more cliff
-        :return: a shading group
-        """
-
-        # get camera to world matrix
-        camera = cmds.lookThru(q=True)
-        # create shader
-        shader = cmds.shadingNode('lambert', asShader=True, name="mcl_terrain_default")
-        # sampler for mesh
-        sampler = cmds.shadingNode('samplerInfo', asUtility=True)
-        # preset colors
-        color_grass = (0.388, 1.00, 0.101)
-        color_dirt = (0.530, 0.499, 0.179)
-        color_cliff = (0.208, 0.211, 0.222)
-        # creating and connecting nodes
-
-        # a scale factor according to land height
-        scale_factor = cmds.shadingNode('multiplyDivide', asUtility=True)
-        cmds.setAttr(scale_factor + '.operation', 2)  # divide mode
-        cmds.setAttr(scale_factor + '.input2', 20.0, 1.0, 1.0, type='float3')  # divide by 20
-        cmds.connectAttr(sampler + '.pointObjY', scale_factor + '.input1X')
-
-        # blend according to height to determine whether it is grass or dirt
-        blend_height = cmds.shadingNode('blendColors', asUtility=True)
-        cmds.setAttr(blend_height + '.color1', color_grass[0], color_grass[1], color_grass[2], type='float3')
-        cmds.setAttr(blend_height + '.color2', color_dirt[0], color_dirt[1], color_dirt[2], type='float3')
-        cmds.connectAttr(scale_factor + '.outputX', blend_height + '.blender')  # use a scaled coefficient to blend
-
-        # the node to transform camera space to world space
-        eye_to_world = cmds.shadingNode('vectorProduct', asUtility=True)
-        cmds.setAttr(eye_to_world + '.normalizeOutput', True)
-        cmds.setAttr(eye_to_world + '.operation', 3)
-        cmds.connectAttr(camera + '.worldMatrix[0]', eye_to_world + '.matrix')# camera matrix
-        cmds.connectAttr(sampler + '.normalCamera', eye_to_world + '.input1')# the normal in camera space to be transformed
-
-
-        # This node remaps normalY (-1,1) to (0,1), and determine cliff or ground.
-        remap = cmds.shadingNode('remapValue', asUtility = True)
-        cmds.setAttr(remap + '.inputMax', 1)
-        cmds.setAttr(remap + '.inputMin', -1)
-        cmds.setAttr(remap + '.value[0].vlp', 0.6)  # vlp: start point of a linear interpolate
-        cmds.setAttr(remap + '.value[0].vlfv', 0.0)  # vlfv: start value of a linear interpolate
-        cmds.setAttr(remap + '.value[0].vli', 1)  # using a linear interpolation
-        cmds.setAttr(remap + '.value[1].vlp', 0.7)
-        cmds.setAttr(remap + '.value[1].vlfv', 1.0)
-        cmds.setAttr(remap + '.value[1].vli', 1)
-        cmds.connectAttr(eye_to_world + '.outputY', remap + '.inputValue')
-
-        # the node to blend between cliff and ground using normal
-        cliff_ground_blend = cmds.shadingNode('blendColors', asUtility=True)
-        cmds.connectAttr(blend_height + '.output', cliff_ground_blend + '.color1')
-        cmds.setAttr(cliff_ground_blend + '.color2', color_cliff[0], color_cliff[1], color_cliff[2], type='float3')
-        cmds.connectAttr(remap + '.outValue', cliff_ground_blend + '.blender')
-
-        # connect to output!
-        cmds.connectAttr(cliff_ground_blend + '.output', shader + '.color')
-
-        shading_group = cmds.sets(renderable=True, noSurfaceShader=True, empty=True)
-        cmds.connectAttr(shader + ".outColor", shading_group + '.surfaceShader', f=True)
-        return shading_group
