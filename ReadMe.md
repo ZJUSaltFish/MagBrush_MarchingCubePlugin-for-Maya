@@ -1,6 +1,8 @@
 # MagBrush - MarchingCube Plugin for Maya
 
 A simple plugin for maya2023, enables creating landscape with marching-cube method.
+<img width="800" alt="image" src="https://github.com/ZJUSaltFish/MagBrush_MarchingCubePlugin-for-Maya/assets/114348635/34c2c9d9-02fd-4826-861b-c51fd89a52d6">
+
 
 ## Usage
 
