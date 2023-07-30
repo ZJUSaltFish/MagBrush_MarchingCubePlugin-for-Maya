@@ -75,6 +75,7 @@ Up to now, only one hotkey: SHIFT hold - switch brush to subtract mode
 ## Unfinished
 
 Maybe you will find some interfaces or functions in script but not available on GUI. Because this is not finished yet.
+Currently Missing: save/load; undo/redo; more brush modes, e.g. smoothing; more brush shapes, e.g. box, masked...; terrain transfrom; etc.
 
 
 
