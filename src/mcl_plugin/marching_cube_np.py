@@ -1,14 +1,12 @@
 """
 This is an optimized version of marching cube in maya using numpy 1.21.5
-Algorithm and initial implementation by gaozeke (see marching_cube.py)
+Algorithm and initial implementation by gaozeke (marching_cube.py, not included in this version)
 Migration and some optimization by ZJUSaltFish
 """
 
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
-import random as rd
 import numpy as np
-import math
 import time
 
 class MarchingCubeNp(object):
@@ -511,7 +509,6 @@ class MarchingCubeNp(object):
                         continue
                     changed_blocks.append((i,j,k))
 
-        # 重建被改变的区块
         # Reconstructing the altered blocks.
         for block_index in changed_blocks:
             mesh_name = f'mesh_{block_index[0]}_{block_index[1]}_{block_index[2]}'
@@ -588,7 +585,6 @@ class MarchingCubeNp(object):
         self._num_list = []
         self._face_list = []
 
-        # 生成每一个单元
         # Generate each individual cell.
         for i in range(p_x * self._block_size, (p_x+1) * self._block_size):
             for j in range(p_y * self._block_size, (p_y+1) * self._block_size):
@@ -639,7 +635,6 @@ class MarchingCubeNp(object):
                     size, p_x, p_y, p_z
                 )
 
-        # 生成六面上的面
         # Generating faces on hexahedral sides.
         tmp_vertices = []
         for j in range(6):
@@ -668,17 +663,23 @@ class MarchingCubeNp(object):
         :param position: kwarg, world-pos (x,y,z)
         :return: distance(float)
         """
-        if 0<position[0]<8 and 0<position[1]<8 and 0<position[2]<8:
-            x = int(position[0])
-            y = int(position[1])
-            z = int(position[2])
-            lerpx = position[0] - x
-            lerpy = position[1] - y
-            lerpz = position[2] - z
-            return 1.0/3 *( self.mesh[x+1][y][z]*lerpx + self.mesh[x][y+1][z]*lerpy + self.mesh[x][y][z+1]*lerpz + self.mesh[x][y][z]*(3-lerpx-lerpy-lerpz) )
-        else:
+        index_x = int((position[0] - self._offset[0]) // self._interval)
+        if index_x >= self._block_size * self._size[0]:
             return 1
+        index_y = int((position[1] - self._offset[1]) // self._interval)
+        if index_y >= self._block_size * self._size[0]:
+            return 1
+        index_z = int((position[2] - self._offset[2]) // self._interval)
+        if index_z >= self._block_size * self._size[0]:
+            return 1
+        p_x = (position[0] - self._offset[0]) / self._interval - index_x
+        p_y = (position[1] - self._offset[1]) / self._interval - index_y
+        p_z = (position[2] - self._offset[2]) / self._interval - index_z
+        return (p_x * 0.5 * (self._sdf[index_x+1][index_y+1][index_z] + self._sdf[index_x+1][index_y][index_z+1])
+                + p_y * 0.5 * (self._sdf[index_x+1][index_y+1][index_z] + self._sdf[index_x][index_y+1][index_z+1])
+                 + p_z * 0.5 * (self._sdf[index_x+1][index_y][index_z+1] + self._sdf[index_x][index_y+1][index_z+1])
+                 + (3-p_x-p_y-p_z) * self._sdf[index_x][index_y][index_z]) / 3
 
-    import maya.cmds as cmds
-    import maya.api.OpenMaya as om
+
+
 

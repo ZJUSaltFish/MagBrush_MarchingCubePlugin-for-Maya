@@ -64,16 +64,24 @@ Up to now, only one hotkey: SHIFT hold - switch brush to subtract mode
 |- **Pyside2:** site-package Pyside2
 |- **MarchingCubeLandscape:** Entry of mcl plugin. To load mcl, use maya plugin manager to load this file.
 
-**Sample Scene:**  .mb files as example
+**sample scene:**  .mb files as example
 
 **ReadMe:** This file
 
-## 
+
+
+## Unfinished
+
+Maybe you will find some interfaces or functions in script but not available on GUI. Because this is not finished yet.
+
+
 
 ## WARN
 
-Marching cube is an inefficient algorithm. Maya is also inefficient, and single-thread in kernel.
+- Marching cube is an inefficient algorithm. Maya is also inefficient, and single-thread in kernel.
 
-So this plugin is of very low running speed. **Don't create a large terrain** if your cpu is not good enough.
+​		So this plugin is of very low running speed. **Don't create a large terrain** if your cpu is not good enough.
+
+- **BUG Known**: Don't use ctrl z for undo. Currently undo is NOT SUPPORT
 
 (We don't know how to optimize creating and rendering meshes in maya)

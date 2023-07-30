@@ -21,6 +21,9 @@ class BrushModes(Enum):
     subtract = 1
     smooth = 2
 
+class BrushStrokes(Enum):
+    by_surface = 0
+    by_view = 1
 
 class BrushModeColors():
     add = (0.343, 0.684, 0.306)
@@ -50,15 +53,6 @@ class BrushTool():
         # brush mode, add, subtract, smooth, etc
         self._brush_mode = BrushModes.add
 
-        # self._new_brush(self._brush_type)
-        # self.set_radius(1.0)
-        # self.set_strength(1.0)
-        # self.set_hardness(1.0)
-
-        # python multi-thread for controlling maya brush. Ugly but I dont have better way.
-        # self._brush_event = Event()
-        # self._brush_async = None
-        # self._event_loop = asyncio.new_event_loop()
         # registering
         cmds.draggerContext(self.CONTEXT_NAME, initialize=self._switch_on, finalize=self._switch_off, edit=False,
                                                     image1='commandButton.png',
@@ -66,6 +60,7 @@ class BrushTool():
         # self._KEY_EVENT = om.MEventMessage.addEventCallback("KeyDown", self._hotkey_callback)
 
         # variables of a stroke
+        self._brush_stroke_mode = BrushStrokes.by_surface
         self._start_source = None
         self._start_dir = None
         self._stroke_start = None
@@ -118,7 +113,6 @@ class BrushTool():
             build_node = None
             if cmds.ls(self._BRUSH_NAME) != []:
                 history = cmds.listHistory(self._BRUSH_NAME)
-                print(history)
                 for node in history:
                     if cmds.nodeType(node) == 'makeNurbSphere':
                         build_node = node
@@ -151,21 +145,7 @@ class BrushTool():
         automatically called when switching to mcltool
         :return:
         """
-        # create new brush object
         self._new_brush(self._brush_type)
-
-        # cmds.select(cmds.ls(type='mesh'))
-        # killing old brush controller thread in case the user clicked twice
-        # if self._brush_async is not None:
-        #    self._brush_async.cancel()
-        # self._brush_async = self._event_loop.create_task(self._brush_async_control())
-        # print("created")
-        # asyncio.run(self._brush_async_control())
-        # self._brush_event.set()
-        # new event
-        # self._brush_event = Event()
-        # new controller thread
-        # Thread(target=self._brush_threading, args=(self._brush_event,)).start()
 
     def _switch_off(self):
         """
@@ -175,19 +155,41 @@ class BrushTool():
         """
         if cmds.objExists(self._BRUSH_NAME):
             cmds.delete(self._BRUSH_NAME)
-        # self._brush_async.cancel()
-        # self._brush_event.set()
 
     def _draw(self):
         """
         This function combine _press and _draw to prevent bug caused by maya dragCommand and pressCommand
-        :return:
+        Called when user is drawing a stroke.
+        It works differently according to brush mode:
+        mode0 - draw on surface.
+        mode1 - draw on view plane. This enables drawing on void
+        By default, mode0
+        :return: None
         """
-        if self._brush_dragging:
-            self._drag()
+        if self._brush_stroke_mode is BrushStrokes.by_surface:
+            # draw on surface: just keep drawing
+            if self._mcl is None:
+                return
+            self.update_mode()
+            location = self._ray_march()
+            if location is None:
+                self._hide_brush()
+            else:
+                self._render_brush(location=location)
+                if self._brush_mode == BrushModes.subtract:
+                    self._mcl.add_point(location, self._brush_radius, self._brush_strength, self._brush_hardness)
+                else:
+                    self._mcl.add_point(location, self._brush_radius, -self._brush_strength, self._brush_hardness)
+
+        elif self._brush_stroke_mode is BrushStrokes.by_view:
+            # draw by wive: the press determines the stroke start, then the drag moves brush on view plane
+            if self._brush_dragging:
+                self._drag()
+            else:
+                self._brush_dragging = True
+                self._press()
         else:
-            self._brush_dragging = True
-            self._press()
+            pass
 
     def _release(self):
         """
@@ -198,6 +200,15 @@ class BrushTool():
         self._start_source = None
         self._start_dir = None
         self._stroke_start = None
+
+    def switch_stroke(self, new_stroke_mode):
+        """
+        This function switches the stroke mode.
+        :param new_stroke_mode: BrushStrokes(Enum)
+        :return: None
+        """
+        self._brush_stroke_mode = new_stroke_mode
+        self._release()  # reset the brush
 
     def _press(self):
         """
@@ -271,7 +282,7 @@ class BrushTool():
 
     def _ray_to_view(self, mouse_pos):
         """
-        This function calculates the intersection point of mouse position ray and view plane passing self._stroke_start
+        This function calculates the intersection point of the ray from mouse and view plane passing brush
         """
 
         viewport_pos = om.MPoint(mouse_pos[0], mouse_pos[1], 0)
@@ -291,7 +302,12 @@ class BrushTool():
         return om.MVector(target)
 
     def _ray_check(self, mouse_pos):
-        
+        """
+        This function use the ray check method to get the intersection point of the ray from mouse and the terrain mesh
+        The intersection point can be used for brush position.
+        :param mouse_pos:
+        :return:
+        """
 
         viewport_pos = om.MPoint(mouse_pos[0], mouse_pos[1], 0)
 
@@ -338,7 +354,7 @@ class BrushTool():
         """
         Ray marching is another way to get the brush position
         This method enabled because Marching Cubes have sample points of SDF
-        :return:
+        :return: the location of brush
         """
         # get mouse position in pixel coordinate
         mouse_pos = cmds.draggerContext(
@@ -351,22 +367,24 @@ class BrushTool():
         omui.M3dView().active3dView().viewToWorld(
             int(viewport_pos[0]), int(viewport_pos[1]), ray_source, ray_direction)
         # marching until touch the surface of SDF
-        MAX_STEP = 64
+        step = 1.0
         find = False
-        for i in range(128):
-            ray_source += ray_direction * 0.5  # step:0.5
-            if (self._mcl.get_distance(ray_source) < 0.5):
+        for i in range(64):
+            ray_source += ray_direction * step
+            dist = self._mcl.get_distance(ray_source)
+            if -0.15 < dist < 0.15:
                 find = True
                 break
-        if find is False:
-            return None
-        else:
-            # do a more detailed marching
-            for i in range(10):
-                ray_source -= ray_direction * 0.05
-                if (self._mcl.get_distance(ray_source) > 0.5):
-                    break
+            elif dist < 0:
+                step = -0.1
+            elif dist < 0.5:
+                step = 0.1
+            else:
+                pass
+        if find is True:
             return ray_source
+        else:
+            return None
 
     def _render_brush(self, *, location):
         """

@@ -229,23 +229,25 @@ class MclManager(object):
         Use the tool to start the plugin gui
         :return: None
         """
-        if not cmds.shelfLayout("Custom", exists=True):
-            cmds.shelfLayout("Custom", parent='ShelfLayout')
-        cmds.setParent("Custom")
-        self.remove_from_shelf()  # this dont works. I dont know why
+        self.remove_from_shelf()  
+        cmds.shelfLayout("MagBrush", parent='ShelfLayout')
+        cmds.setParent("MagBrush")
+        icon_path = os.path.dirname(os.path.abspath(
+            inspect.getframeinfo(inspect.currentframe()).filename
+            )) + '\\pic\\icon.png'
         self.shelf_button = cmds.shelfButton(self.TOOL_NAME,annotation=self.TOOL_NAME,
-                                             image1='commandButton.png', command=self.show_ui)
+                                             image1=icon_path, command=self.show_ui)
 
     def remove_from_shelf(self):
         """
         This function deletes the mcltool from tool shelf
         :return: None
         """
-        if cmds.shelfButton(self.shelf_button, exists=True):
-            cmds.deleteUI(self.shelf_button, control=True)
-        for i in range(10):
-            if cmds.shelfButton(self.shelf_button + str(i), exists=True):
-                cmds.deleteUI(self.shelf_button + str(i), control=True)
+        if cmds.shelfLayout("MagBrush", exists=True):
+            buttons = cmds.shelfLayout("MagBrush", query=True, childArray=True)
+            if buttons:
+                cmds.deleteUI(buttons)
+            cmds.deleteUI("MagBrush")
 
     def create_mcl_material(self):
         """
